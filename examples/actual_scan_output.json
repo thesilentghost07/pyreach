@@ -1,0 +1,72 @@
+{
+  "project": "examples/sample_project",
+  "scanned_at": "2026-10-31T22:05:59Z",
+  "analysis_scope": "Static AST intraprocedural and cross-file call-graph analysis. Does not execute code or resolve runtime reflection.",
+  "summary": {
+    "total_dependencies": 2,
+    "total_advisories": 2,
+    "reachable_count": 1,
+    "not_reachable_count": 0,
+    "uncertain_count": 1
+  },
+  "dependencies": [
+    {
+      "name": "pyyaml",
+      "version": "5.3.1",
+      "is_pinned": true,
+      "source_file": "requirements.txt",
+      "line": 1
+    },
+    {
+      "name": "requests",
+      "version": "2.19.0",
+      "is_pinned": true,
+      "source_file": "requirements.txt",
+      "line": 2
+    }
+  ],
+  "findings": [
+    {
+      "package": "pyyaml",
+      "installed_version": "5.3.1",
+      "advisory_id": "PYSEC-2020-96",
+      "confidence": "high",
+      "summary": "UNVERIFIED HACKATHON SEED: Arbitrary code execution in PyYAML via full_load / load when parsing untrusted YAML files.",
+      "verdict": "REACHABLE",
+      "vulnerable_symbol": "yaml.load",
+      "evidence": [
+        {
+          "from": "main.<module>",
+          "to": "main.run_pipeline",
+          "file": "main.py",
+          "line": 18
+        },
+        {
+          "from": "main.run_pipeline",
+          "to": "yaml.load",
+          "file": "main.py",
+          "line": 12
+        }
+      ],
+      "uncertainty_reasons": [],
+      "reason": "A static call path from entry point 'main.<module>' to vulnerable symbol 'yaml.load' was confirmed."
+    },
+    {
+      "package": "requests",
+      "installed_version": "2.19.0",
+      "advisory_id": "PYSEC-2018-28",
+      "confidence": "low",
+      "summary": "Credentials exposure on HTTP-to-HTTPS redirect in Requests.",
+      "verdict": "UNCERTAIN",
+      "vulnerable_symbol": "requests.sessions.SessionRedirectMixin.rebuild_auth",
+      "evidence": [],
+      "uncertainty_reasons": [
+        "Dynamic call hazard at main.py:15 (getattr): Dynamic reflection/execution call 'getattr()' at main.py:15"
+      ],
+      "reason": "No static path found, but cannot guarantee non-reachability due to dynamic constructs, parse errors, or unpinned version constraints."
+    }
+  ],
+  "warnings": [
+    "Network disabled: advisory data limited to curated symbol_map.json"
+  ]
+}

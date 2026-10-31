@@ -11,6 +11,12 @@
 ## Selected Problem Statement
 - Problem 03: Python Vulnerability Reachability Analyzer
 
-## AI Models Used & Justification
-- Selected Model: `gemma4:e4b` / `gemma4:e2b` (Open-weight model running locally via Ollama)
-- Reason for Selection: Python vulnerability advisories in the PyPA and OSV databases frequently describe affected functionality in unstructured English prose or raw patch diffs without explicitly listing machine-readable vulnerable function symbols under `ecosystem_specific`. We use Gemma 4 locally to parse unstructured CVE descriptions and patch headers to extract exact target function sinks (`module.function_name`), feeding those targets into our deterministic Python AST call-graph and BFS reachability verifier.
+## AI Models Used
+- **Product Models Integrated in Application:** None — deterministic Python AST static analysis and BFS call-graph reachability engine (no AI model is used to fabricate or override security verdicts).
+- **AI Coding Assistants Used During Development:** Google Antigravity, Google Gemini, ChatGPT.
+
+## Reason for Selecting Each Model
+- **Deterministic Static Analysis (Product Core):** Security reachability verdicts require verifiable source-code line evidence and zero hallucinated call paths. A deterministic AST visitor and graph BFS ensure reproducible, evidence-backed security audits.
+- **Google Antigravity & Google Gemini (Development Assistance):** Used to accelerate boilerplate generation, AST visitor implementation, unit test authoring, and dashboard UI scaffolding under human review.
+- **ChatGPT (Development Assistance):** Used for architecture brainstorming, specification reference, and dependency parsing logic.
+

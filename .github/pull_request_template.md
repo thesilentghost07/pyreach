@@ -3,40 +3,32 @@
   Please complete all mandatory sections before requesting review.
 -->
 
-## 1. Summary of Changes
+## What this PR does
 <!-- Provide a concise bulleted list of what this PR introduces, fixes, or refactors. -->
 - 
-
-## 2. File Ownership & Boundary Compliance
-<!-- Verify that this PR modifies ONLY files assigned to your role. -->
-- [ ] Modified only assigned files within designated scope.
-- [ ] No direct commits to `main`; branched off clean `main`.
 
 **Files Changed in this PR:**
 - `path/to/file`
 
-## 3. Mandatory AI Model Disclosure (Slide 14 Governance Requirement)
-<!-- 
-  Required for all submissions to secure 10 governance points per Slide 14.
-  Do not delete or leave this section empty.
--->
-| Category | Tool / Model Used | Purpose / Context |
-| :--- | :--- | :--- |
-| **Product Models (Integrated in Application)** | None | Pure deterministic Python AST + BFS static analysis |
-| **AI Coding Assistants Used** | Google Gemini Pro, Google Antigravity | Code generation, test scaffolding, CI configuration |
+- [ ] Modified only assigned files within designated scope.
+- [ ] No direct commits to `main`; branched off clean `main`.
 
-## 4. Testing & Verification Checklist
-<!-- All checks must pass before merging. -->
+## Models the product uses in this PR
+<!-- Specify any product AI models integrated into application logic, or None. -->
+- **Product Models Integrated in Application:** None (pure deterministic Python AST and BFS static analysis; no AI model is used to fabricate or override security verdicts).
+
+## AI coding assistants that helped write it
+<!-- Disclose AI coding assistants utilized during development of this PR. -->
+- **AI Coding Assistants Used:** Google Gemini Pro, Google Gemini Flash, Google Antigravity, ChatGPT.
+
+## How we tested it
+<!-- Verification checklist and proof of testing -->
 - [ ] Executed `python -m pytest tests/ -v` locally.
 - [ ] All test items pass green (zero failed, zero errored).
-- [ ] (If applicable) CLI verified: `python -m backend.cli --offline` executes cleanly.
-- [ ] (If applicable) API endpoints verified via FastAPI test client.
+- [ ] CLI verified: `python -m backend.cli --format json` executes cleanly.
+- [ ] FastAPI endpoints and dashboard verified (`GET /`, `GET /api/health`, `POST /api/scan`).
 
 **Test Run Output / Verification Proof:**
 ```text
-# Paste pytest summary line here (e.g., 83 passed in 0.23s)
+# Paste pytest summary line here (e.g., 193 passed in 0.30s)
 ```
-
-## 5. Breaking Changes & Integration Impact
-- [ ] No breaking changes: Backward compatible with existing schemas and endpoints.
-- [ ] Breaking change: Describe the migration path or impact on teammate modules below.
