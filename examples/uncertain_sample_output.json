@@ -1,0 +1,40 @@
+{
+  "project": "tests/fixtures/uncertain_app",
+  "scanned_at": "2026-10-31T19:42:17Z",
+  "analysis_scope": "Static AST intraprocedural and cross-file call-graph analysis. Does not execute code or resolve runtime reflection.",
+  "summary": {
+    "total_dependencies": 1,
+    "total_advisories": 1,
+    "reachable_count": 0,
+    "not_reachable_count": 0,
+    "uncertain_count": 1
+  },
+  "dependencies": [
+    {
+      "name": "pyyaml",
+      "version": "5.3.1",
+      "is_pinned": true,
+      "source_file": "requirements.txt",
+      "line": 1
+    }
+  ],
+  "findings": [
+    {
+      "package": "pyyaml",
+      "installed_version": "5.3.1",
+      "advisory_id": "PYSEC-2020-96",
+      "confidence": "low",
+      "summary": "UNVERIFIED HACKATHON SEED: Arbitrary code execution in PyYAML via full_load / load when parsing untrusted YAML files.",
+      "verdict": "UNCERTAIN",
+      "vulnerable_symbol": "yaml.load",
+      "evidence": [],
+      "uncertainty_reasons": [
+        "Dynamic call hazard at app.py:4 (getattr): Dynamic reflection/execution call 'getattr()' at app.py:4"
+      ],
+      "reason": "No static path found, but cannot guarantee non-reachability due to dynamic constructs, parse errors, or unpinned version constraints."
+    }
+  ],
+  "warnings": [
+    "Network disabled: advisory data limited to curated symbol_map.json"
+  ]
+}

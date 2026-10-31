@@ -1,0 +1,38 @@
+{
+  "project": "tests/fixtures/not_reachable_app",
+  "scanned_at": "2026-10-31T19:42:17Z",
+  "analysis_scope": "Static AST intraprocedural and cross-file call-graph analysis. Does not execute code or resolve runtime reflection.",
+  "summary": {
+    "total_dependencies": 1,
+    "total_advisories": 1,
+    "reachable_count": 0,
+    "not_reachable_count": 1,
+    "uncertain_count": 0
+  },
+  "dependencies": [
+    {
+      "name": "pyyaml",
+      "version": "5.3.1",
+      "is_pinned": true,
+      "source_file": "requirements.txt",
+      "line": 1
+    }
+  ],
+  "findings": [
+    {
+      "package": "pyyaml",
+      "installed_version": "5.3.1",
+      "advisory_id": "PYSEC-2020-96",
+      "confidence": "medium",
+      "summary": "UNVERIFIED HACKATHON SEED: Arbitrary code execution in PyYAML via full_load / load when parsing untrusted YAML files.",
+      "verdict": "NOT_REACHABLE",
+      "vulnerable_symbol": "yaml.load, yaml.unsafe_load, yaml.full_load",
+      "evidence": [],
+      "uncertainty_reasons": [],
+      "reason": "No static call path found from application entry points to yaml.load, yaml.unsafe_load, yaml.full_load within analyzed project scope (no dynamic execution hazards detected)."
+    }
+  ],
+  "warnings": [
+    "Network disabled: advisory data limited to curated symbol_map.json"
+  ]
+}
