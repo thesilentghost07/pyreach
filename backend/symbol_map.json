@@ -1,0 +1,35 @@
+{
+  "_comment": "Offline curated map: package + version -> advisory ID + vulnerable function symbols. Used when OSV API is unreachable or returns no symbol data. HONESTY RULES: (1) 'verified': false means the advisory ID and symbols have NOT been cross-checked against the live OSV database yet. (2) 'synthetic': true means the entry is a fake test fixture, NOT a real vulnerability. Never present synthetic entries as real findings.",
+  "entries": [
+    {
+      "package": "pyyaml",
+      "versions": ["5.3.1"],
+      "affected_range": "<5.4",
+      "advisory_id": "PYSEC-2020-96",
+      "aliases": ["CVE-2020-14343"],
+      "summary": "UNVERIFIED HACKATHON SEED: Arbitrary code execution in PyYAML via full_load / load when parsing untrusted YAML files.",
+      "vulnerable_symbols": [
+        "yaml.load",
+        "yaml.unsafe_load",
+        "yaml.full_load"
+      ],
+      "source": "Hackathon team plan; MUST be verified against OSV before the demo",
+      "verified": false,
+      "synthetic": false
+    },
+    {
+      "package": "demo-vuln-pkg",
+      "versions": ["1.0.0"],
+      "affected_range": "==1.0.0",
+      "advisory_id": "SYNTHETIC-DEMO-001",
+      "aliases": [],
+      "summary": "SYNTHETIC DEMO ADVISORY (not a real vulnerability): Simulated unsafe execution sink for reachability testing.",
+      "vulnerable_symbols": [
+        "demo_vuln_pkg.unsafe_exec"
+      ],
+      "source": "Synthetic test fixture for hackathon reachability demonstration",
+      "verified": false,
+      "synthetic": true
+    }
+  ]
+}
