@@ -148,8 +148,10 @@
             border-radius: 14px;
             overflow: hidden;
             background: #07070a;
-            border: 1.5px dashed rgba(255, 255, 255, 0.13);
-            transition: border-color 0.25s ease, background 0.25s ease;
+            border: 1.5px dashed #30363d;
+            transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(0) scale(1);
+            will-change: transform, border-color, box-shadow;
         }
 
         .dropzone-beam-container::before {
@@ -158,7 +160,7 @@
             inset: -2px;
             border-radius: 16px;
             padding: 1.5px;
-            background: conic-gradient(from var(--angle), transparent 60%, rgba(255, 255, 255, 0.45) 85%, transparent 100%);
+            background: conic-gradient(from var(--angle), transparent 60%, rgba(56, 189, 248, 0.6) 80%, rgba(255, 255, 255, 0.85) 85%, transparent 100%);
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
@@ -170,8 +172,10 @@
 
         .dropzone-beam-container:hover,
         .dropzone-beam-container.drag-over {
-            border-color: rgba(255, 255, 255, 0.32);
+            transform: translateY(-2px) scale(1.005);
+            border-color: rgba(56, 189, 248, 0.7);
             background: #09090e;
+            box-shadow: 0 12px 32px -8px rgba(56, 189, 248, 0.22), inset 0 0 24px rgba(255, 255, 255, 0.03);
         }
 
         .dropzone-beam-container:hover::before,
@@ -180,6 +184,101 @@
             opacity: 1;
             animation: rotateBorder 4s linear infinite;
         }
+
+        /* Subtle White Transparent Grid Overlay Inside Dropzone */
+        .dropzone-grid-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: inherit;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 32px 32px;
+            opacity: 0.6;
+            transition: opacity 220ms ease;
+            z-index: 1;
+        }
+
+        /* Mouse-Tracking Spotlight & Grid Brightening */
+        .dropzone-spotlight {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: inherit;
+            background: radial-gradient(
+                280px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(56, 189, 248, 0.16) 0%,
+                rgba(255, 255, 255, 0.10) 35%,
+                transparent 70%
+            );
+            opacity: 0;
+            transition: opacity 220ms ease;
+            z-index: 2;
+        }
+
+        .dropzone-beam-container:hover .dropzone-spotlight,
+        .dropzone-beam-container.drag-over .dropzone-spotlight {
+            opacity: 1;
+        }
+
+        .dropzone-beam-container:hover .dropzone-grid-layer,
+        .dropzone-beam-container.drag-over .dropzone-grid-layer {
+            opacity: 1;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+        }
+
+        /* Animated Upload Icon: Upward floating bounce + glow transition */
+        @keyframes uploadFloatBounce {
+            0%, 100% {
+                transform: translateY(0);
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+            }
+            50% {
+                transform: translateY(-6px);
+                filter: drop-shadow(0 8px 16px rgba(56, 189, 248, 0.5));
+            }
+        }
+
+        .dropzone-upload-icon {
+            transition: color 220ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1), filter 220ms ease;
+            will-change: transform, filter;
+        }
+
+        .dropzone-beam-container:hover .dropzone-upload-icon,
+        .dropzone-beam-container.drag-over .dropzone-upload-icon {
+            color: #38bdf8 !important;
+            animation: uploadFloatBounce 1.8s ease-in-out infinite;
+        }
+
+        /* Sleek 4 Corner Brackets */
+        .corner-bracket {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            z-index: 4;
+            transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+            border-color: rgba(255, 255, 255, 0.22);
+        }
+        .corner-tl { top: 9px; left: 9px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: 4px; }
+        .corner-tr { top: 9px; right: 9px; border-top: 2px solid; border-right: 2px solid; border-top-right-radius: 4px; }
+        .corner-bl { bottom: 9px; left: 9px; border-bottom: 2px solid; border-left: 2px solid; border-bottom-left-radius: 4px; }
+        .corner-br { bottom: 9px; right: 9px; border-bottom: 2px solid; border-right: 2px solid; border-bottom-right-radius: 4px; }
+
+        .dropzone-beam-container:hover .corner-bracket,
+        .dropzone-beam-container.drag-over .corner-bracket {
+            width: 16px;
+            height: 16px;
+            border-color: rgba(56, 189, 248, 0.9);
+            filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.7));
+        }
+        .dropzone-beam-container:hover .corner-tl, .dropzone-beam-container.drag-over .corner-tl { top: 6px; left: 6px; }
+        .dropzone-beam-container:hover .corner-tr, .dropzone-beam-container.drag-over .corner-tr { top: 6px; right: 6px; }
+        .dropzone-beam-container:hover .corner-bl, .dropzone-beam-container.drag-over .corner-bl { bottom: 6px; left: 6px; }
+        .dropzone-beam-container:hover .corner-br, .dropzone-beam-container.drag-over .corner-br { bottom: 6px; right: 6px; }
 
         /* 5. Status Dot Breathing Pulse (@keyframes statusPulse) */
         @keyframes statusPulseGreen {
@@ -262,19 +361,45 @@
             transform: scale(0.97) !important;
         }
 
-        /* 3-Layer Background Architecture */
+        /* 1. Subtle White Transparent Grid Background With Ambient Drift */
+        @keyframes gridAmbientDrift {
+            0%, 100% {
+                transform: translate3d(0, 0, 0) scale(1);
+                opacity: 0.72;
+            }
+            50% {
+                transform: translate3d(0, 6px, 0) scale(1.008);
+                opacity: 0.95;
+            }
+        }
+
         .bg-grid-layer {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: 0;
             background-image: 
-                radial-gradient(circle, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-                linear-gradient(to right, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
-            background-size: 28px 28px, 56px 56px, 56px 56px;
-            mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 30%, transparent 90%);
-            -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 30%, transparent 90%);
+                linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 32px 32px;
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 20%, #000 60%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 20%, #000 60%, transparent 100%);
+            animation: gridAmbientDrift 14s ease-in-out infinite;
+            will-change: transform, opacity;
+        }
+
+        /* Accessibility: Prefers Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            .bg-grid-layer,
+            .dropzone-beam-container,
+            .dropzone-beam-container::before,
+            .dropzone-upload-icon,
+            .corner-bracket,
+            .scan-laser {
+                animation: none !important;
+                transition: none !important;
+                transform: none !important;
+            }
         }
 
         .bg-spotlight {
@@ -459,12 +584,21 @@
 
                 <!-- Main Analyzer Container Card (revealUp delay-card) -->
                 <div class="reveal-init delay-card" style="max-width: 980px; width: 100%; margin: 0 auto; border-radius: 18px; background: rgba(10, 10, 14, 0.82); border: 1px solid rgba(255, 255, 255, 0.08); padding: 28px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 20px 40px rgba(0,0,0,0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
-                    <!-- 1. Interactive Drag & Drop Zone with Conic Rotating Border Beam & Sweep Laser -->
-                    <div id="dropzone" class="dropzone-beam-container group transition-all duration-200" style="padding: 44px 24px; text-align: center; position: relative; cursor: pointer;">
+                    <!-- 1. Interactive Drag & Drop Zone with 32px Grid, Mouse-Tracking Spotlight, Conic Beam & Corner Brackets -->
+                    <div id="dropzone" class="dropzone-beam-container group" style="padding: 44px 24px; text-align: center; position: relative; cursor: pointer;">
+                        <!-- Subtle White Transparent Grid Overlay -->
+                        <div class="dropzone-grid-layer" aria-hidden="true"></div>
+                        <!-- Mouse-Tracking Spotlight Overlay -->
+                        <div class="dropzone-spotlight" aria-hidden="true"></div>
+                        <!-- Sleek 4 Corner Brackets -->
+                        <span class="corner-bracket corner-tl" aria-hidden="true"></span>
+                        <span class="corner-bracket corner-tr" aria-hidden="true"></span>
+                        <span class="corner-bracket corner-bl" aria-hidden="true"></span>
+                        <span class="corner-bracket corner-br" aria-hidden="true"></span>
                         <!-- Sweeping Scanning Laser Line -->
                         <div id="scan-laser-line" class="scan-laser"></div>
 
-                        <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: #71717a; margin: 0 auto 14px; position: relative; z-index: 3;" class="group-hover:text-white transition-colors" aria-hidden="true">
+                        <svg class="dropzone-upload-icon" xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: #71717a; margin: 0 auto 14px; position: relative; z-index: 3;" aria-hidden="true">
                             <path d="M12 13v8"></path>
                             <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
                             <path d="m8 17 4-4 4 4"></path>
@@ -528,7 +662,7 @@
                                     <span style="width: 7px; height: 7px; border-radius: 50%; background: #e11d48; box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.14); flex-shrink: 0;"></span>
                                     <div style="min-width: 0;">
                                         <div style="color: #f4f4f6; font-size: 12.5px; font-weight: 600; line-height: 1.35; white-space: normal;">
-                                            Reachable App (PyYAML CVE-2020-14343)
+                                            Reachable (PyYAML CVE-2020-1747)
                                         </div>
                                         <div style="font-size: 11px; color: #71717a; margin-top: 2px;">
                                             Auto-fills &amp; Runs Scan
@@ -548,7 +682,7 @@
                                     <span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14); flex-shrink: 0;"></span>
                                     <div style="min-width: 0;">
                                         <div style="color: #f4f4f6; font-size: 12.5px; font-weight: 600; line-height: 1.35; white-space: normal;">
-                                            Not Reachable App (Safe pyyaml.safe_load)
+                                            Non-Reachable (Safe pyyaml.safe_load)
                                         </div>
                                         <div style="font-size: 11px; color: #71717a; margin-top: 2px;">
                                             Auto-fills &amp; Runs Scan
@@ -568,7 +702,7 @@
                                     <span style="width: 7px; height: 7px; border-radius: 50%; background: #d97706; box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.14); flex-shrink: 0;"></span>
                                     <div style="min-width: 0;">
                                         <div style="color: #f4f4f6; font-size: 12.5px; font-weight: 600; line-height: 1.35; white-space: normal;">
-                                            Uncertain App (Dynamic getattr Hazard)
+                                            Uncertain (Dynamic getattr Hazard)
                                         </div>
                                         <div style="font-size: 11px; color: #71717a; margin-top: 2px;">
                                             Auto-fills &amp; Runs Scan
@@ -638,6 +772,9 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-3">
+                        <button id="btn-export-json" type="button" onclick="exportJsonReport()" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: #f4f4f6; padding: 8px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 500; transition: all 0.15s ease;" class="hover:bg-white/10 hover:border-white/25 active:scale-95 cursor-pointer shadow-sm">
+                            <span id="btn-export-json-text">⬇️ Export JSON</span>
+                        </button>
                         <button id="btn-copy-pr" type="button" onclick="copyPrReport()" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: #f4f4f6; padding: 8px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 500; transition: all 0.15s ease;" class="hover:bg-white/10 hover:border-white/25 active:scale-95 cursor-pointer shadow-sm">
                             <span id="btn-copy-pr-text">📋 Copy GitHub PR Report</span>
                         </button>
@@ -941,8 +1078,11 @@
             triggerScan(fixturePath);
         }
 
+        // Demo Fixtures removed: Real-time static reachability analysis engine active
+        const DEMO_FIXTURES = {};
+
         // Render Findings & Trace Viewer
-        function renderFindings(report) {
+        
             currentReport = report;
             const container = document.getElementById('findings-container');
             if (!container) return;
@@ -1061,18 +1201,16 @@
                                     ${stepsHtml}
                                 </div>
                             </div>
-                            <!-- Remediation Box for Reachable Findings -->
-                            <div style="margin-top: 12px; padding: 12px 14px; background: rgba(225, 29, 72, 0.05); border: 1px solid rgba(225, 29, 72, 0.25); border-radius: 8px;">
+                            <div style="margin-top: 10px; padding: 12px 14px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                                    <div style="display: flex; align-items: center; gap: 6px; color: #fb7185; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                                        <span>Remediation Advice</span>
-                                    </div>
-                                    <span style="font-size: 10.5px; color: #71717a; font-family: 'JetBrains Mono', monospace;">Copy-paste fix</span>
+                                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #4ade80;">🛡️ PyReach AI Guardian — Remediation Diff</span>
+                                    <span style="font-size: 10px; color: #71717a; font-family: 'JetBrains Mono', monospace;">Deterministic Fix</span>
                                 </div>
-                                <div style="display: flex; align-items: center; justify-content: space-between; background: #07070a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 8px 12px; margin-top: 6px;">
-                                    <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #4ade80;">${(finding.package || 'pyyaml').toLowerCase().includes('yaml') ? 'pip install --upgrade "pyyaml>=5.4"' : `pip install --upgrade "${finding.package}>=latest"`}</code>
-                                    <button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent.trim()); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy', 1500);" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #d4d4d8; font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Copy</button>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; background: #050508; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px 12px; line-height: 1.5;">
+                                    <div style="color: #f87171;"><span style="user-select:none; margin-right:8px;">-</span># Vulnerable call path detected:</div>
+                                    <div style="color: #f87171;"><span style="user-select:none; margin-right:8px;">-</span>${finding.vulnerable_symbol}(...)</div>
+                                    <div style="color: #4ade80;"><span style="user-select:none; margin-right:8px;">+</span># Remediation: safe sink or upgraded pinned package:</div>
+                                    <div style="color: #4ade80;"><span style="user-select:none; margin-right:8px;">+</span>${finding.remediation ? finding.remediation : (finding.package === 'pyyaml' ? 'yaml.safe_load(...)' : 'safe_' + finding.vulnerable_symbol + '(...)')}</div>
                                 </div>
                             </div>
                         </div>
@@ -1137,6 +1275,27 @@
                 `;
                 container.appendChild(card);
             });
+        }
+
+        // Export ScanReport JSON
+        function exportJsonReport() {
+            if (!currentReport) {
+                alert('Run a scan first to generate a report!');
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentReport, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "scan-report.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            const btnText = document.getElementById('btn-export-json-text');
+            if (btnText) {
+                const orig = btnText.textContent;
+                btnText.textContent = '✅ Downloaded!';
+                setTimeout(() => { btnText.textContent = orig; }, 2000);
+            }
         }
 
         // Export GitHub PR Markdown
@@ -1215,9 +1374,10 @@ ${tableRows}
             }
         }
 
-        // Toggle Demo Mode (loads live sample fixture)
+        // Toggle Demo Mode
         function toggleDemoMode() {
-            triggerScan('tests/fixtures/reachable_app');
+            isDemoMode = !isDemoMode;
+            alert(isDemoMode ? 'Demo Mode: Force offline verified fixture visualizer.' : 'Live Mode: Connected directly to FastAPI scanner.');
         }
 
         // Toggle Theme
@@ -1225,32 +1385,26 @@ ${tableRows}
             console.log('Obsidian aesthetic locked for maximum contrast.');
         }
 
-        function setLoadingState(isLoading) {
-            const btn = document.getElementById('btn-scan-text');
-            const dropzone = document.getElementById('dropzone');
-            const laser = document.getElementById('scan-laser-line');
-            if (isLoading) {
-                if (dropzone) dropzone.classList.add('is-scanning');
-                if (laser) laser.classList.add('active');
-                if (btn) btn.innerHTML = '<span>Analyzing AST...</span>';
-                const telemetryVerd = document.getElementById('telemetry-verdict');
-                if (telemetryVerd) telemetryVerd.textContent = 'ANALYZING...';
-            } else {
-                if (dropzone) dropzone.classList.remove('is-scanning');
-                if (laser) laser.classList.remove('active');
-                if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg><span>▸ Run Scan</span>';
-            }
-        }
-
         // Trigger Scan (With Laser Sweep & Telemetry Updates)
         async function triggerScan(customPath) {
             const input = document.getElementById('workspace-path-input');
             const path = customPath || (input ? input.value : 'tests/fixtures/reachable_app');
-            setLoadingState(true);
+            const btn = document.getElementById('btn-scan-text');
+            const dropzone = document.getElementById('dropzone');
+            const laser = document.getElementById('scan-laser-line');
+
+            // Trigger Laser Sweep Animation & Border Conic Beam
+            if (dropzone) dropzone.classList.add('is-scanning');
+            if (laser) laser.classList.add('active');
+            if (btn) btn.innerHTML = '<span>Analyzing AST...</span>';
+
+            const telemetryVerd = document.getElementById('telemetry-verdict');
+            if (telemetryVerd) telemetryVerd.textContent = 'PARSING...';
 
             const apiBase = getApiBase();
             const scanUrl = apiBase ? `${apiBase}/api/scan` : '/api/scan';
 
+            let report = null;
             try {
                 const res = await fetch(scanUrl, {
                     method: 'POST',
@@ -1258,23 +1412,30 @@ ${tableRows}
                     body: JSON.stringify({ project_path: path, use_network: false }),
                     signal: AbortSignal.timeout(10000)
                 });
-                if (!res.ok) {
+                if (res.ok) {
+                    report = await res.json();
+                } else {
                     let errMsg = "Scan failed";
                     try {
                         const err = await res.json();
                         errMsg = err.detail || errMsg;
                     } catch (e) {}
-                    throw new Error(errMsg);
+                    console.error("Scan error from server:", errMsg);
+                    alert("Scan Error: " + errMsg);
                 }
-                const report = await res.json();
+            } catch (e) {
+                console.error("Network or scan failure:", e);
+                alert("Connection Error: " + e.message);
+            } finally {
+                if (dropzone) dropzone.classList.remove('is-scanning');
+                if (laser) laser.classList.remove('active');
+                if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg><span>▸ Run Scan</span>';
+            }
+
+            if (report) {
                 renderFindings(report);
                 switchTab('results');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (err) {
-                console.error("Scan error:", err);
-                alert("Scan Error: " + err.message);
-            } finally {
-                setLoadingState(false);
             }
         }
 
@@ -1319,61 +1480,6 @@ ${tableRows}
             });
         }
 
-        // Real ZIP Archive & Folder Upload Pipeline
-        async function uploadAndScanZip(fileInputOrFiles) {
-            let files = null;
-            if (fileInputOrFiles instanceof FileList || Array.isArray(fileInputOrFiles)) {
-                files = fileInputOrFiles;
-            } else if (fileInputOrFiles && fileInputOrFiles.files) {
-                files = fileInputOrFiles.files;
-            } else if (fileInputOrFiles instanceof File) {
-                files = [fileInputOrFiles];
-            }
-            if (!files || !files.length) return;
-
-            setLoadingState(true);
-            const btn = document.getElementById('btn-scan-text');
-            if (btn) btn.innerHTML = '<span>Uploading &amp; Scanning...</span>';
-
-            const formData = new FormData();
-            if (files.length === 1 && files[0].name.endsWith('.zip')) {
-                formData.append('file', files[0]);
-            } else {
-                for (const f of files) {
-                    formData.append('files', f, f.webkitRelativePath || f.name);
-                }
-            }
-
-            const apiBase = getApiBase();
-            const uploadUrl = apiBase ? `${apiBase}/api/upload` : '/api/upload';
-
-            try {
-                const response = await fetch(uploadUrl, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    let errMsg = "Upload scan failed";
-                    try {
-                        const err = await response.json();
-                        errMsg = err.detail || errMsg;
-                    } catch (jsonErr) {}
-                    throw new Error(errMsg);
-                }
-
-                const data = await response.json();
-                renderFindings(data);
-                switchTab('results');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (error) {
-                console.error("Scan error:", error);
-                alert("Scan Error: " + error.message);
-            } finally {
-                setLoadingState(false);
-            }
-        }
-
         // File and Folder Upload Hooks
         document.addEventListener('DOMContentLoaded', () => {
             checkBackendHealth();
@@ -1387,15 +1493,87 @@ ${tableRows}
             if (chooseZipBtn && zipInput) chooseZipBtn.onclick = (e) => { e.preventDefault(); zipInput.click(); };
             if (chooseFolderBtn && folderInput) chooseFolderBtn.onclick = (e) => { e.preventDefault(); folderInput.click(); };
 
-            if (zipInput) zipInput.onchange = () => uploadAndScanZip(zipInput);
-            if (folderInput) folderInput.onchange = () => uploadAndScanZip(folderInput);
+            const handleUpload = async (files) => {
+                if (!files || !files.length) return;
+                const btn = document.getElementById('btn-scan-text');
+                const dropzone = document.getElementById('dropzone');
+                const laser = document.getElementById('scan-laser-line');
 
-            // Drag and drop zone with .drag-over state
+                if (dropzone) dropzone.classList.add('is-scanning');
+                if (laser) laser.classList.add('active');
+                if (btn) btn.innerHTML = '<span>Uploading &amp; Scanning...</span>';
+
+                const formData = new FormData();
+                if (files.length === 1 && files[0].name.endsWith('.zip')) {
+                    formData.append('file', files[0]);
+                } else {
+                    for (const f of files) {
+                        formData.append('files', f, f.webkitRelativePath || f.name);
+                    }
+                }
+
+                const apiBase = getApiBase();
+                const uploadUrl = apiBase ? `${apiBase}/api/upload` : '/api/upload';
+                let report = null;
+
+                try {
+                    const res = await fetch(uploadUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (res.ok) {
+                        report = await res.json();
+                    } else {
+                        let errMsg = "Upload scan failed";
+                        try {
+                            const err = await res.json();
+                            errMsg = err.detail || errMsg;
+                        } catch (e) {}
+                        console.error("Upload scan failed:", errMsg);
+                        alert("Upload Scan Error: " + errMsg);
+                    }
+                } catch (e) {
+                    console.error("Upload network error:", e);
+                    alert("Upload Error: " + e.message);
+                } finally {
+                    if (dropzone) dropzone.classList.remove('is-scanning');
+                    if (laser) laser.classList.remove('active');
+                    if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg><span>▸ Run Scan</span>';
+                }
+
+                if (report) {
+                    renderFindings(report);
+                    switchTab('results');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+
+            if (zipInput) zipInput.onchange = () => handleUpload(zipInput.files);
+            if (folderInput) folderInput.onchange = () => handleUpload(folderInput.files);
+
+            // Drag and drop zone with .drag-over state and mouse-tracking spotlight
             const dropzone = document.getElementById('dropzone');
             if (dropzone) {
+                dropzone.addEventListener('mousemove', (e) => {
+                    const rect = dropzone.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    dropzone.style.setProperty('--mouse-x', `${x}px`);
+                    dropzone.style.setProperty('--mouse-y', `${y}px`);
+                });
+                dropzone.addEventListener('mouseleave', () => {
+                    dropzone.style.removeProperty('--mouse-x');
+                    dropzone.style.removeProperty('--mouse-y');
+                });
+
                 dropzone.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     dropzone.classList.add('drag-over');
+                    const rect = dropzone.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    dropzone.style.setProperty('--mouse-x', `${x}px`);
+                    dropzone.style.setProperty('--mouse-y', `${y}px`);
                 });
                 dropzone.addEventListener('dragleave', () => {
                     dropzone.classList.remove('drag-over');
@@ -1404,7 +1582,7 @@ ${tableRows}
                     e.preventDefault();
                     dropzone.classList.remove('drag-over');
                     if (e.dataTransfer.files && e.dataTransfer.files.length) {
-                        uploadAndScanZip(e.dataTransfer.files);
+                        handleUpload(e.dataTransfer.files);
                     }
                 });
             }
