@@ -25,6 +25,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from backend.ast_scanner import scan_project_ast
@@ -217,6 +218,15 @@ def scan_project(request: ScanRequest):
             status_code=500,
             detail="Internal server error during project scan.",
         )
+
+
+# ---------------------------------------------------------------------------
+# Mount static frontend
+# ---------------------------------------------------------------------------
+
+_frontend_dir = REPO_ROOT / "frontend"
+if _frontend_dir.is_dir():
+    app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")
 
 
 # ---------------------------------------------------------------------------
