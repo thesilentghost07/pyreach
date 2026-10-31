@@ -4,337 +4,536 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PyReach — Uncommonly Precise Vulnerability Reachability Analyzer</title>
-  <meta name="description" content="AI & AST-powered static reachability analyzer for Python dependencies. Pinpoints statically executable vulnerable symbols with zero execution.">
+  <meta name="description" content="AI & AST-powered static reachability analyzer for Python dependencies. Eliminates false positives with zero code execution.">
   
-  <!-- Google Fonts: Plus Jakarta Sans for UI + JetBrains Mono for Code -->
+  <!-- Google Fonts: Plus Jakarta Sans + JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
-  <!-- Precision Vector Grid Background Overlay -->
-  <div class="grid-backdrop" aria-hidden="true"></div>
-  <div class="glow-orb glow-violet" aria-hidden="true"></div>
-  <div class="glow-orb glow-emerald" aria-hidden="true"></div>
+
+  <!-- Abnormal AI 3D Interactive Perspective Wave & Particle Mesh Canvas -->
+  <canvas id="abnormalWaveCanvas" class="abnormal-wave-canvas" aria-hidden="true"></canvas>
+  <div class="abnormal-radial-glow glow-top" aria-hidden="true"></div>
+  <div class="abnormal-radial-glow glow-bottom" aria-hidden="true"></div>
 
   <!-- App Wrapper -->
-  <div class="app-container">
+  <div class="app-layout">
     
-    <!-- Top Navigation Bar (GitHub-style Breadcrumbs + Abnormal Precision Brand) -->
-    <header class="top-nav">
-      <div class="nav-left">
-        <a href="#" class="brand-link">
-          <div class="brand-symbol">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 22H7L12 11L17 22H22L12 2Z" fill="url(#brandGrad)"/>
-              <circle cx="12" cy="15" r="2.5" fill="#00f5a0"/>
+    <!-- ======================================================================
+         GitHub Main Navigation Header
+         ====================================================================== -->
+    <header class="gh-global-header">
+      <div class="gh-header-left">
+        <a href="#" class="gh-logo-link" title="PyReach Home">
+          <!-- Abnormal Precision Brand Icon + GitHub Octicon silhouette -->
+          <div class="brand-geometric-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 22H7.5L12 11.5L16.5 22H22L12 2Z" fill="url(#abnormalGrad)"/>
+              <circle cx="12" cy="15" r="2.2" fill="#00ff9d" class="beacon-circle"/>
               <defs>
-                <linearGradient id="brandGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#a855f7"/>
-                  <stop offset="1" stop-color="#6366f1"/>
+                <linearGradient id="abnormalGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#c084fc"/>
+                  <stop offset="0.5" stop-color="#8b5cf6"/>
+                  <stop offset="1" stop-color="#4f46e5"/>
                 </linearGradient>
               </defs>
             </svg>
           </div>
-          <span class="brand-title">PyReach</span>
+          <span class="gh-brand-text">PyReach</span>
         </a>
-        <span class="brand-separator">/</span>
-        <div class="repo-badge">
-          <svg class="octicon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1h-8a1 1 0 00-1 1v6.708A2.486 2.486 0 014.5 9h8V1.5z"/>
-          </svg>
-          <span class="repo-name">thesilentghost07 / pyreach</span>
-          <span class="branch-tag">feat/m3-deps-api</span>
+
+        <div class="gh-repo-breadcrumb">
+          <span class="breadcrumb-owner">thesilentghost07</span>
+          <span class="breadcrumb-slash">/</span>
+          <a href="https://github.com/thesilentghost07/pyreach" target="_blank" class="breadcrumb-repo">pyreach</a>
+          <span class="gh-visibility-pill">Public</span>
         </div>
       </div>
 
-      <div class="nav-right">
-        <div class="status-indicator online" id="apiStatusBadge">
-          <span class="status-dot"></span>
-          <span class="status-label">API Ready: Port 8000</span>
-        </div>
-        
-        <a href="https://github.com/thesilentghost07/pyreach" target="_blank" rel="noopener" class="gh-button">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      <div class="gh-header-search">
+        <div class="gh-search-box">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M11.5 7a4.499 4.499 0 11-8.998 0A4.499 4.499 0 0111.5 7zm-.82 4.74a6 6 0 10-1.06 1.06l3.04 3.04a.75.75 0 101.06-1.06l-3.04-3.04z"/>
           </svg>
-          <span>GitHub</span>
-        </a>
+          <span class="search-placeholder">Type <kbd>/</kbd> to search vulnerabilities, symbols, or files...</span>
+        </div>
+      </div>
+
+      <div class="gh-header-actions">
+        <!-- Live API status chip -->
+        <div class="api-telemetry-chip" id="apiTelemetryChip" title="Real-time backend API heartbeat">
+          <span class="pulse-beacon"></span>
+          <span class="telemetry-label" id="apiStatusText">Engine Live: Port 8000</span>
+        </div>
+
+        <!-- GitHub Social Buttons -->
+        <div class="gh-btn-group">
+          <button class="gh-pill-btn">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"/></svg>
+            Watch
+          </button>
+          <a href="https://github.com/thesilentghost07/pyreach" target="_blank" class="gh-pill-btn">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5A2.25 2.25 0 0012.5 6.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878z"/></svg>
+            Fork <span class="gh-count">18</span>
+          </a>
+          <a href="https://github.com/thesilentghost07/pyreach" target="_blank" class="gh-pill-btn star-btn">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>
+            Star <span class="gh-count">142</span>
+          </a>
+        </div>
       </div>
     </header>
 
-    <!-- Hero Header: Abnormal AI "Uncommonly Precise" Security Aesthetic -->
-    <section class="hero-section">
-      <div class="hero-chip">
-        <span class="chip-sparkle">⚡</span>
-        <span>Deterministic AST Call Graph + OSV Advisory Matching</span>
+    <!-- GitHub Subnav Tabs -->
+    <nav class="gh-subnav-bar">
+      <div class="gh-subnav-container">
+        <button class="subnav-tab active" data-view="codeView">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z"/></svg>
+          <span>Scanner & Code</span>
+        </button>
+        <button class="subnav-tab" data-view="securityView">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.467.133a1.75 1.75 0 011.066 0l5.25 1.68A1.75 1.75 0 0115 3.48v4.27c0 4.29-2.97 7.7-6.52 8.7a1.75 1.75 0 01-.96 0C3.97 15.45 1 12.04 1 7.75V3.48a1.75 1.75 0 011.217-1.667l5.25-1.68z"/></svg>
+          <span>Security Advisories</span>
+          <span class="subnav-counter" id="subnavAdvisoriesBadge">0</span>
+        </button>
+        <button class="subnav-tab" data-view="graphView">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zm5.672 2.5h2.156a2.25 2.25 0 110 1.5H7.172a.75.75 0 00-.75.75v3.25a2.25 2.25 0 11-1.5 0V8a2.25 2.25 0 012.25-2.25z"/></svg>
+          <span>Reachability DAG</span>
+        </button>
+        <button class="subnav-tab" data-view="depsView">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0113.25 15H2.75A1.75 1.75 0 011 13.25V2.75z"/></svg>
+          <span>Dependencies</span>
+          <span class="subnav-counter" id="subnavDepsBadge">0</span>
+        </button>
+        <button class="subnav-tab" data-view="honestyView">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1116 0A8 8 0 010 8zm8-6.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM6.5 7.75A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2.5a.75.75 0 010-1.5h.25v-2h-.5a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"/></svg>
+          <span>Hackathon Honesty & Slide 14</span>
+        </button>
       </div>
-      <h1 class="hero-title">
-        Uncommonly Precise <span class="gradient-text">Reachability</span>
-      </h1>
-      <p class="hero-subtitle">
-        Eliminate alert fatigue. Statically prove whether vulnerable dependency symbols are actually invoked by your Python code — with zero code execution.
-      </p>
+    </nav>
 
-      <!-- Target Selection & Execution Console -->
-      <div class="scan-console-card">
-        <div class="console-header">
-          <div class="tab-list" role="tablist">
-            <span class="console-label">Target Fixture Presets:</span>
-            <button class="preset-btn active" data-path="examples/vulnerable_app" id="presetVuln">
-              <span class="indicator-dot danger"></span>
-              examples/vulnerable_app (Reachable)
-            </button>
-            <button class="preset-btn" data-path="examples/safe_app" id="presetSafe">
-              <span class="indicator-dot success"></span>
-              examples/safe_app (Safe)
-            </button>
-            <button class="preset-btn" data-path="examples/dynamic_hazard_app" id="presetDyn">
-              <span class="indicator-dot warning"></span>
-              examples/dynamic_hazard_app (Uncertain)
-            </button>
+    <!-- ======================================================================
+         Hero Banner: Abnormal AI "Uncommonly Precise" Precision Aesthetic
+         ====================================================================== -->
+    <section class="abnormal-hero">
+      <div class="telemetry-radar-banner">
+        <span class="radar-scan-dot"></span>
+        <span class="radar-text">CONTINUOUS STATIC REACHABILITY RADAR • ZERO CODE EXECUTION ACTIVE</span>
+        <span class="radar-tag">AST + BFS ENGINE</span>
+      </div>
+
+      <h1 class="hero-display-title">
+        UNCOMMONLY PRECISE <br>
+        <span class="text-glow-gradient">VULNERABILITY REACHABILITY</span>
+      </h1>
+      <p class="hero-lead">
+        Traditional software composition analysis drowns developers in noisy CVE alerts. 
+        PyReach performs deterministic Python AST parsing and call-graph traversal to prove which vulnerability sinks can actually execute.
+      </p>
+    </section>
+
+    <!-- ======================================================================
+         GitHub-Style Project Bar & FOLDER UPLOAD / Drag-and-Drop Zone
+         ====================================================================== -->
+    <section class="gh-repo-view-box">
+      <!-- File Navigation Bar with Branch & "Add File / Upload Folder" -->
+      <div class="gh-repo-action-bar">
+        <div class="bar-left">
+          <!-- Branch Selector -->
+          <div class="branch-selector-dropdown">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5z"/></svg>
+            <span class="branch-name">feat/m3-deps-api</span>
+            <span class="dropdown-caret">▾</span>
+          </div>
+
+          <!-- Project Path Breadcrumb -->
+          <div class="project-path-display">
+            <span class="path-root">target:</span>
+            <input type="text" id="projectPathInput" class="inline-path-input" value="examples/vulnerable_app" placeholder="Folder path or upload your folder below">
           </div>
         </div>
 
-        <div class="console-input-row">
-          <div class="input-wrapper">
-            <span class="input-prefix">Target:</span>
-            <input type="text" id="projectPathInput" class="path-input" value="examples/vulnerable_app" placeholder="e.g. examples/vulnerable_app" autocomplete="off" spellcheck="false">
-          </div>
-
-          <div class="toggle-group">
-            <label class="switch" title="Toggle live network lookup against OSV.dev vs offline symbol map">
+        <div class="bar-right">
+          <!-- OSV Mode Toggle -->
+          <div class="network-mode-pill">
+            <label class="toggle-switch">
               <input type="checkbox" id="networkToggle" checked>
-              <span class="slider"></span>
+              <span class="toggle-slider"></span>
             </label>
-            <span class="toggle-label" id="networkLabel">Live OSV API</span>
+            <span class="mode-text" id="networkLabel">Live OSV API (3s timeout)</span>
           </div>
 
-          <button id="runScanBtn" class="primary-btn glow-cta">
-            <span class="btn-spinner" id="btnSpinner" aria-hidden="true"></span>
-            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <!-- GitHub-Style "Upload Folder" Action Button -->
+          <div class="upload-action-group">
+            <input type="file" id="folderInput" webkitdirectory directory multiple class="hidden-file-input">
+            <input type="file" id="fileInput" multiple class="hidden-file-input">
+            <button class="gh-secondary-btn" id="uploadFolderTriggerBtn" title="Select a local Python project folder to scan">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 2.5h3.5l1.5 1.5h7.5A1.75 1.75 0 0116 5.75v7.5A1.75 1.75 0 0114.25 15H1.75A1.75 1.75 0 010 13.25v-9A1.75 1.75 0 011.75 2.5zm0 1.5a.25.25 0 00-.25.25v9c0 .138.112.25.25.25h12.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25H6.25l-1.5-1.5H1.75z"/></svg>
+              <span>Upload Folder</span>
+            </button>
+          </div>
+
+          <!-- Execute Scan Primary CTA (Abnormal Purple Shimmer) -->
+          <button id="runScanBtn" class="abnormal-primary-cta">
+            <span class="cta-laser-beam" aria-hidden="true"></span>
+            <svg class="cta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
-            <span class="btn-text">Execute Reachability Scan</span>
-            <kbd class="shortcut-kbd">⌘ Enter</kbd>
+            <span class="cta-text">Scan Project</span>
+            <span class="cta-kbd">⌘↵</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Quick Fixture Presets Row -->
+      <div class="presets-quick-bar">
+        <span class="presets-label">Scannable Sample Fixtures:</span>
+        <button class="fixture-chip active" data-path="examples/vulnerable_app" id="presetVuln">
+          <span class="chip-status-dot red"></span>
+          <span>vulnerable_app</span>
+          <span class="chip-badge">Reachable Sink</span>
+        </button>
+        <button class="fixture-chip" data-path="examples/safe_app" id="presetSafe">
+          <span class="chip-status-dot green"></span>
+          <span>safe_app</span>
+          <span class="chip-badge">Safe Load</span>
+        </button>
+        <button class="fixture-chip" data-path="examples/dynamic_hazard_app" id="presetDyn">
+          <span class="chip-status-dot orange"></span>
+          <span>dynamic_hazard_app</span>
+          <span class="chip-badge">getattr() Reflection</span>
+        </button>
+      </div>
+
+      <!-- ====================================================================
+           GitHub Drag & Drop Folder Dropzone
+           ==================================================================== -->
+      <div class="gh-folder-dropzone" id="folderDropzone">
+        <div class="dropzone-border-glow"></div>
+        <div class="dropzone-content">
+          <div class="dropzone-icon-box">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              <line x1="12" y1="11" x2="12" y2="17"></line>
+              <polyline points="9 14 12 11 15 14"></polyline>
+            </svg>
+          </div>
+          <div class="dropzone-text-group">
+            <p class="dropzone-title">
+              <strong>Drag & drop any Python project folder here</strong> or <span class="browse-link" id="browseFolderLink">choose from your computer</span>
+            </p>
+            <p class="dropzone-sub">
+              Uploads recursively parse <code>requirements.txt</code> & <code>*.py</code> source files. Entirely in-memory static AST scanning with strictly zero code execution.
+            </p>
+          </div>
+          <div class="dropzone-badge-tag" id="uploadedFilesStatus">
+            Ready to receive folder
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Real-time Loading Skeleton & Scanning Pulse -->
-    <div id="scanningPulse" class="scanning-pulse hidden">
-      <div class="pulse-line"></div>
-      <div class="pulse-status">
-        <span class="pulse-spin"></span>
-        <span id="pulseText">Parsing requirements.txt & building AST call graph...</span>
+    <!-- Real-time Scanner Radar Sweep Animation -->
+    <div id="radarScanBanner" class="radar-scanning-card hidden">
+      <div class="radar-laser-line"></div>
+      <div class="radar-status-content">
+        <div class="radar-spinner"></div>
+        <div class="radar-messages">
+          <span class="radar-step-text" id="radarStepText">Executing Python Vulnerability Reachability Analyzer...</span>
+          <span class="radar-detail-text">Building deterministic call-graph & evaluating OSV vulnerability sinks</span>
+        </div>
       </div>
     </div>
 
-    <!-- Main Results Container -->
-    <main id="resultsArea" class="results-area">
+    <!-- ======================================================================
+         Executive Posture Metrics & Risk Distribution
+         ====================================================================== -->
+    <section class="metrics-row">
+      <!-- Metric 1: Total Dependencies -->
+      <div class="stat-card" data-tilt>
+        <div class="stat-header">
+          <span class="stat-title">TOTAL DEPENDENCIES</span>
+          <span class="stat-icon">📦</span>
+        </div>
+        <div class="stat-value" id="valTotalDeps">—</div>
+        <div class="stat-sub" id="subDepsInfo">requirements.txt parsed</div>
+      </div>
+
+      <!-- Metric 2: Vulnerabilities -->
+      <div class="stat-card" data-tilt>
+        <div class="stat-header">
+          <span class="stat-title">KNOWN ADVISORIES</span>
+          <span class="stat-icon">🛡️</span>
+        </div>
+        <div class="stat-value" id="valTotalAdvisories">—</div>
+        <div class="stat-sub">OSV & Curated Map</div>
+      </div>
+
+      <!-- Metric 3: Reachable Sinks (Abnormal Red) -->
+      <div class="stat-card stat-card-reachable" data-tilt>
+        <div class="stat-laser-glow"></div>
+        <div class="stat-header">
+          <span class="stat-title">REACHABLE SINKS</span>
+          <span class="risk-badge badge-reachable">HIGH RISK</span>
+        </div>
+        <div class="stat-value text-red" id="valReachable">—</div>
+        <div class="stat-sub">Statically proven execution path</div>
+      </div>
+
+      <!-- Metric 4: Verified Safe (Emerald) -->
+      <div class="stat-card stat-card-safe" data-tilt>
+        <div class="stat-header">
+          <span class="stat-title">NOT REACHABLE</span>
+          <span class="risk-badge badge-safe">SAFE</span>
+        </div>
+        <div class="stat-value text-green" id="valNotReachable">—</div>
+        <div class="stat-sub">Imported with zero call reach</div>
+      </div>
+
+      <!-- Metric 5: Dynamic Uncertain (Amber) -->
+      <div class="stat-card stat-card-uncertain" data-tilt>
+        <div class="stat-header">
+          <span class="stat-title">UNCERTAIN HAZARDS</span>
+          <span class="risk-badge badge-uncertain">REFLECTION</span>
+        </div>
+        <div class="stat-value text-amber" id="valUncertain">—</div>
+        <div class="stat-sub">Dynamic calls (getattr / eval)</div>
+      </div>
+    </section>
+
+    <!-- GitHub Proportional Security Severity Breakdown Bar -->
+    <div class="gh-security-posture-container">
+      <div class="posture-bar-track" id="postureBarTrack">
+        <div class="track-slice slice-reachable" id="sliceReachable" style="width: 0%" title="Reachable Sinks"></div>
+        <div class="track-slice slice-uncertain" id="sliceUncertain" style="width: 0%" title="Uncertain Reflection"></div>
+        <div class="track-slice slice-safe" id="sliceSafe" style="width: 0%" title="Verified Safe"></div>
+      </div>
+      <div class="posture-meta-row">
+        <div class="meta-legend">
+          <span class="legend-chip"><span class="chip-color color-red"></span> Reachable (<span id="pctReachable">0%</span>)</span>
+          <span class="legend-chip"><span class="chip-color color-amber"></span> Uncertain (<span id="pctUncertain">0%</span>)</span>
+          <span class="legend-chip"><span class="chip-color color-green"></span> Verified Safe (<span id="pctSafe">0%</span>)</span>
+        </div>
+        <div class="meta-governance">
+          <span>Deterministic Reachability Engine • 100% Zero-Execution</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         Main Interactive Workspace: Call Graph Topology + Security Findings
+         ====================================================================== -->
+    <div class="workspace-grid">
       
-      <!-- Metrics & Executive Posture Cards -->
-      <section class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-top">
-            <span class="metric-title">Total Dependencies</span>
-            <div class="metric-icon-box">📦</div>
+      <!-- LEFT: Abnormal AI Animated Reachability Call Graph (DAG) -->
+      <section class="workspace-card graph-workspace">
+        <div class="card-top-bar">
+          <div class="top-bar-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <h3>Reachability Call Graph (DAG)</h3>
           </div>
-          <div class="metric-value" id="valTotalDeps">—</div>
-          <div class="metric-sub" id="subTotalDeps">Extracted from requirements.txt</div>
+          <div class="graph-status-pill" id="graphStateBadge">BFS Signal Flow: Active</div>
         </div>
 
-        <div class="metric-card">
-          <div class="metric-top">
-            <span class="metric-title">Advisories Matched</span>
-            <div class="metric-icon-box">🛡️</div>
+        <!-- Interactive SVG Canvas with animated data packet flows -->
+        <div class="graph-viewport-box" id="graphViewport">
+          <svg id="reachabilityGraphSvg" class="reachability-graph-svg" width="100%" height="450"></svg>
+          
+          <div class="graph-legend-overlay">
+            <div class="legend-pill"><span class="dot-key dot-entry"></span> Entry Point</div>
+            <div class="legend-pill"><span class="dot-key dot-internal"></span> Internal Caller</div>
+            <div class="legend-pill"><span class="dot-key dot-sink"></span> Vulnerable Sink</div>
           </div>
-          <div class="metric-value" id="valTotalAdvisories">—</div>
-          <div class="metric-sub" id="subTotalAdvisories">OSV / Offline Symbol Map</div>
         </div>
 
-        <div class="metric-card card-reachable">
-          <div class="metric-top">
-            <span class="metric-title">Reachable Sinks</span>
-            <span class="verdict-tag tag-reachable">HIGH RISK</span>
-          </div>
-          <div class="metric-value danger-text" id="valReachable">—</div>
-          <div class="metric-sub">Direct call path from entrypoint</div>
-        </div>
-
-        <div class="metric-card card-safe">
-          <div class="metric-top">
-            <span class="metric-title">Not Reachable</span>
-            <span class="verdict-tag tag-safe">VERIFIED SAFE</span>
-          </div>
-          <div class="metric-value safe-text" id="valNotReachable">—</div>
-          <div class="metric-sub">Imported but never invoked</div>
-        </div>
-
-        <div class="metric-card card-uncertain">
-          <div class="metric-top">
-            <span class="metric-title">Uncertain / Hazards</span>
-            <span class="verdict-tag tag-uncertain">REFLECTION</span>
-          </div>
-          <div class="metric-value warn-text" id="valUncertain">—</div>
-          <div class="metric-sub">Dynamic calls (getattr / eval)</div>
+        <div class="graph-meta-footer">
+          <span>Shows static call propagation from project entry points across the external dependency boundary.</span>
         </div>
       </section>
 
-      <!-- GitHub Proportional Security Risk Bar -->
-      <div class="posture-bar-wrapper">
-        <div class="posture-bar" id="postureBar">
-          <div class="bar-seg seg-reachable" id="barReachable" style="width: 0%" title="Reachable"></div>
-          <div class="bar-seg seg-uncertain" id="barUncertain" style="width: 0%" title="Uncertain"></div>
-          <div class="bar-seg seg-safe" id="barSafe" style="width: 0%" title="Not Reachable"></div>
+      <!-- RIGHT: GitHub Security Advisories & Code Evidence Drawer -->
+      <section class="workspace-card findings-workspace">
+        <div class="card-top-bar">
+          <div class="top-bar-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <h3>Security Advisories & Code Evidence</h3>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="gh-filter-pills" id="findingsFilterPills">
+            <button class="gh-pill active" data-filter="ALL">All (<span id="countAll">0</span>)</button>
+            <button class="gh-pill" data-filter="REACHABLE">Reachable (<span id="countReachable">0</span>)</button>
+            <button class="gh-pill" data-filter="NOT_REACHABLE">Safe (<span id="countSafe">0</span>)</button>
+            <button class="gh-pill" data-filter="UNCERTAIN">Uncertain (<span id="countUncertain">0</span>)</button>
+          </div>
         </div>
-        <div class="posture-legend">
-          <span class="legend-item"><span class="legend-dot dot-reachable"></span> Reachable</span>
-          <span class="legend-item"><span class="legend-dot dot-uncertain"></span> Uncertain</span>
-          <span class="legend-item"><span class="legend-dot dot-safe"></span> Verified Safe</span>
+
+        <!-- Filter Search Row -->
+        <div class="findings-filter-bar">
+          <div class="filter-input-wrapper">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="#64748b"><path d="M11.5 7a4.499 4.499 0 11-8.998 0A4.499 4.499 0 0111.5 7zm-.82 4.74a6 6 0 10-1.06 1.06l3.04 3.04a.75.75 0 101.06-1.06l-3.04-3.04z"/></svg>
+            <input type="text" id="findingSearchBox" class="gh-filter-input" placeholder="Filter by package (e.g. pyyaml), CVE, or function symbol...">
+          </div>
         </div>
+
+        <!-- Dynamic Findings Scrollable List -->
+        <div class="findings-scroll-container" id="findingsContainer">
+          <!-- Dynamic Finding Cards will be rendered here -->
+        </div>
+      </section>
+    </div>
+
+    <!-- ======================================================================
+         GitHub-Style File Explorer Table (Scanned Project Source Files)
+         ====================================================================== -->
+    <section class="gh-file-explorer-card">
+      <div class="explorer-header">
+        <div class="explorer-title">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l3.914 3.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0114.25 16H3.75A1.75 1.75 0 012 14.25V1.75z"/></svg>
+          <h4>Project Files Analyzed</h4>
+        </div>
+        <span class="file-count-badge" id="fileCountBadge">Files in active target</span>
       </div>
 
-      <!-- Split Section: Interactive Call Graph Visualizer + Findings Inspector -->
-      <section class="main-split-view">
-        
-        <!-- Left Column: Interactive Call Graph / DAG Canvas -->
-        <div class="split-column graph-column">
-          <div class="panel-header">
-            <div class="panel-title-group">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-              </svg>
-              <h3>Reachability Call Graph (DAG)</h3>
-            </div>
-            <span class="panel-badge" id="graphStatusBadge">BFS Traversal Visualizer</span>
-          </div>
-
-          <div class="graph-canvas-container" id="graphContainer">
-            <svg id="callGraphSvg" class="call-graph-svg" width="100%" height="440"></svg>
-            <div class="graph-watermark">
-              <span>Entry Points ➔ Call Sites ➔ Vulnerable Sinks</span>
-            </div>
-          </div>
-
-          <div class="graph-footer-notes">
-            <div class="note-pill"><span class="node-key key-entry"></span> Entry Point</div>
-            <div class="note-arrow">➔</div>
-            <div class="note-pill"><span class="node-key key-internal"></span> Internal Caller</div>
-            <div class="note-arrow">➔</div>
-            <div class="note-pill"><span class="node-key key-sink"></span> Vulnerable Sink</div>
-          </div>
-        </div>
-
-        <!-- Right Column: Findings & Evidence Inspector -->
-        <div class="split-column findings-column">
-          <div class="panel-header">
-            <div class="panel-title-group">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              <h3>Security Findings & Code Evidence</h3>
-            </div>
-            
-            <div class="filter-pills" id="filterPills">
-              <button class="filter-pill active" data-filter="ALL">All (<span id="countAll">0</span>)</button>
-              <button class="filter-pill" data-filter="REACHABLE">Reachable (<span id="countReachable">0</span>)</button>
-              <button class="filter-pill" data-filter="NOT_REACHABLE">Safe (<span id="countSafe">0</span>)</button>
-              <button class="filter-pill" data-filter="UNCERTAIN">Uncertain (<span id="countUncertain">0</span>)</button>
-            </div>
-          </div>
-
-          <!-- Search within findings -->
-          <div class="findings-search-row">
-            <input type="text" id="findingsSearchInput" placeholder="Filter by package (e.g. pyyaml), CVE, or symbol..." class="search-input">
-          </div>
-
-          <!-- Dynamic Findings List -->
-          <div class="findings-list" id="findingsList">
-            <!-- Dynamic Finding Cards will be rendered here -->
-          </div>
-        </div>
-      </section>
-
-      <!-- Bottom Inspector Tabs: Dependencies & Raw Audit Report -->
-      <section class="bottom-inspector">
-        <div class="inspector-tabs">
-          <button class="inspector-tab active" data-target="tabDeps">
-            📦 Pinned Dependencies (<span id="tabDepsCount">0</span>)
-          </button>
-          <button class="inspector-tab" data-target="tabAuditReport">
-            📄 Raw ScanReport JSON
-          </button>
-          <button class="inspector-tab" data-target="tabHonesty">
-            ⚖️ Hackathon Honesty & Architecture
-          </button>
-        </div>
-
-        <div class="inspector-content">
-          <!-- Dependencies Tab Content -->
-          <div class="tab-pane active" id="tabDeps">
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Package Name</th>
-                    <th>Pinned Version</th>
-                    <th>Specification</th>
-                    <th>Source File</th>
-                    <th>Line #</th>
-                  </tr>
-                </thead>
-                <tbody id="depsTableBody">
-                  <tr><td colspan="5" class="empty-state">No scan executed yet.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Raw Audit Report Tab Content -->
-          <div class="tab-pane" id="tabAuditReport">
-            <div class="raw-json-bar">
-              <span class="raw-label">Full Pydantic v2 ScanReport Payload</span>
-              <button class="copy-btn" id="copyJsonBtn">Copy JSON</button>
-            </div>
-            <pre class="code-block" id="rawJsonBlock"><code>{ "status": "Run a scan to generate a report" }</code></pre>
-          </div>
-
-          <!-- Honesty & Architecture Tab Content -->
-          <div class="tab-pane" id="tabHonesty">
-            <div class="honesty-card">
-              <h4>Hackathon 2026 Core Honesty Tenets</h4>
-              <ul class="honesty-list">
-                <li><strong>Strictly Zero Code Execution:</strong> Target project source code is never executed, imported, or run. All analysis is 100% static using Python's native <code>ast.parse()</code> text parsing.</li>
-                <li><strong>No Hallucinated Findings:</strong> Vulnerable symbols are matched against verified OSV advisories or explicitly labelled curated fallbacks in <code>symbol_map.json</code>.</li>
-                <li><strong>Conservative Uncertainty:</strong> Dynamic reflection hazards (such as <code>getattr()</code>, <code>eval()</code>, wildcard imports) are never swept under the rug — they conservatively yield <code>UNCERTAIN</code> with exact hazard reasons.</li>
-                <li><strong>Deterministic BFS Graph Traversal:</strong> Reachability results are pure mathematical graphs; identical inputs always produce identical verdicts across test runs.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="app-footer">
-      <div class="footer-left">
-        <span>Team CodeSins • Problem 03: Python Vulnerability Reachability Analyzer</span>
+      <div class="explorer-table-wrapper">
+        <table class="gh-files-table">
+          <thead>
+            <tr>
+              <th>File Name</th>
+              <th>Status</th>
+              <th>Role in Reachability Analysis</th>
+            </tr>
+          </thead>
+          <tbody id="filesTableBody">
+            <tr>
+              <td class="file-col">
+                <svg class="file-icon" width="14" height="14" viewBox="0 0 16 16" fill="#38bdf8"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l3.914 3.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0114.25 16H3.75A1.75 1.75 0 012 14.25V1.75z"/></svg>
+                <span class="file-path-text">requirements.txt</span>
+              </td>
+              <td><span class="tag-status green">Pinned Specs Extracted</span></td>
+              <td class="file-desc-text">Parsed by Member 3; matched with OSV.dev and symbol_map.json</td>
+            </tr>
+            <tr>
+              <td class="file-col">
+                <svg class="file-icon" width="14" height="14" viewBox="0 0 16 16" fill="#a855f7"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l3.914 3.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0114.25 16H3.75A1.75 1.75 0 012 14.25V1.75z"/></svg>
+                <span class="file-path-text">app.py</span>
+              </td>
+              <td><span class="tag-status purple">AST Parsed</span></td>
+              <td class="file-desc-text">Parsed by Member 1; call graph traversed by Member 2</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="footer-right">
+    </section>
+
+    <!-- ======================================================================
+         Bottom Inspection Panels: Dependencies, Raw JSON, Honesty
+         ====================================================================== -->
+    <section class="bottom-dock-card">
+      <div class="dock-tab-bar">
+        <button class="dock-tab active" data-pane="paneDeps">
+          📦 Pinned Dependencies (<span id="dockDepsCount">0</span>)
+        </button>
+        <button class="dock-tab" data-pane="paneRawReport">
+          📄 Raw ScanReport JSON
+        </button>
+        <button class="dock-tab" data-pane="paneHonesty">
+          ⚖️ Hackathon Honesty & Slide 14 Governance
+        </button>
+      </div>
+
+      <!-- Dock Content Panes -->
+      <div class="dock-content">
+        <!-- Pane 1: Dependencies Table -->
+        <div class="dock-pane active" id="paneDeps">
+          <div class="table-scroll-container">
+            <table class="gh-data-table">
+              <thead>
+                <tr>
+                  <th>Package</th>
+                  <th>Installed Version</th>
+                  <th>Pin Status</th>
+                  <th>Source File</th>
+                  <th>Line #</th>
+                </tr>
+              </thead>
+              <tbody id="dockDepsTableBody">
+                <tr><td colspan="5" class="empty-table-state">Scan a project to inspect extracted dependencies.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pane 2: Raw ScanReport JSON -->
+        <div class="dock-pane" id="paneRawReport">
+          <div class="raw-json-action-bar">
+            <span class="json-meta-text">Pydantic v2 Schema Payload emitted by <code>POST /api/scan</code></span>
+            <button class="gh-copy-btn" id="copyJsonBtn">Copy JSON Payload</button>
+          </div>
+          <pre class="gh-code-block" id="rawJsonBlock"><code>{ "status": "Ready to execute reachability scan." }</code></pre>
+        </div>
+
+        <!-- Pane 3: Honesty & Governance -->
+        <div class="dock-pane" id="paneHonesty">
+          <div class="honesty-doctrine-box">
+            <h4>CodeSins Hackathon 2026 Core Honesty Doctrine</h4>
+            <div class="doctrine-grid">
+              <div class="doctrine-item">
+                <span class="doctrine-icon">🛡️</span>
+                <div class="doctrine-info">
+                  <strong>Zero Code Execution Sandbox</strong>
+                  <p>Target project source files are strictly read as plain text and analyzed via Python's built-in <code>ast.parse()</code>. No scanned code is ever imported or run.</p>
+                </div>
+              </div>
+              <div class="doctrine-item">
+                <span class="doctrine-icon">🎯</span>
+                <div class="doctrine-info">
+                  <strong>Zero Hallucinated Vulnerabilities</strong>
+                  <p>Advisories are grounded in verified OSV / PyPA identifiers or explicitly declared seed maps in <code>symbol_map.json</code> with honesty flags.</p>
+                </div>
+              </div>
+              <div class="doctrine-item">
+                <span class="doctrine-icon">⚠️</span>
+                <div class="doctrine-info">
+                  <strong>Conservative Dynamic Hazard Flagging</strong>
+                  <p>Reflection (e.g. <code>getattr()</code>, <code>eval()</code>, wildcard imports) is never ignored; it conservatively yields <code>UNCERTAIN</code> with exact reasoning.</p>
+                </div>
+              </div>
+              <div class="doctrine-item">
+                <span class="doctrine-icon">⚡</span>
+                <div class="doctrine-info">
+                  <strong>Deterministic BFS Call Graph</strong>
+                  <p>Reachability checks use pure graph mathematics: identical code always produces identical reachability proofs across test runs.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Global Footer -->
+    <footer class="gh-footer">
+      <div class="footer-copy">
+        <span>Team <strong>CodeSins</strong> • Problem 03: Python Vulnerability Reachability Analyzer</span>
+        <span class="footer-divider">•</span>
         <span>Hack Day Sonipat • Hacktoberfest 2026</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/thesilentghost07/pyreach" target="_blank">GitHub Repository</a>
+        <a href="https://osv.dev" target="_blank">OSV Database</a>
       </div>
     </footer>
 

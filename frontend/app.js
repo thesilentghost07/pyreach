@@ -1,21 +1,32 @@
 /**
- * PyReach Frontend Application Logic
- * Integrates with FastAPI backend endpoints:
- *   - GET  /api/health
- *   - GET  /api/fixtures
- *   - POST /api/scan
+ * PyReach Frontend Application
+ * Combines:
+ *   - Abnormal AI: Live 3D Perspective Wave & Particle Mesh Canvas
+ *   - GitHub UI: Folder Drag & Drop / Recursive Upload, File Explorer, Code Evidence
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- Canvas: Abnormal AI Interactive 3D Wave Grid ---
+  initAbnormalWaveCanvas();
+
   // --- DOM Elements ---
-  const apiStatusBadge = document.getElementById('apiStatusBadge');
+  const apiStatusText = document.getElementById('apiStatusText');
+  const apiTelemetryChip = document.getElementById('apiTelemetryChip');
   const projectPathInput = document.getElementById('projectPathInput');
   const networkToggle = document.getElementById('networkToggle');
   const networkLabel = document.getElementById('networkLabel');
   const runScanBtn = document.getElementById('runScanBtn');
-  const btnSpinner = document.getElementById('btnSpinner');
-  const scanningPulse = document.getElementById('scanningPulse');
-  const pulseText = document.getElementById('pulseText');
+  const radarScanBanner = document.getElementById('radarScanBanner');
+  const radarStepText = document.getElementById('radarStepText');
+
+  // Folder Upload & Dropzone Elements
+  const folderDropzone = document.getElementById('folderDropzone');
+  const folderInput = document.getElementById('folderInput');
+  const uploadFolderTriggerBtn = document.getElementById('uploadFolderTriggerBtn');
+  const browseFolderLink = document.getElementById('browseFolderLink');
+  const uploadedFilesStatus = document.getElementById('uploadedFilesStatus');
+  const filesTableBody = document.getElementById('filesTableBody');
+  const fileCountBadge = document.getElementById('fileCountBadge');
 
   // Metrics
   const valTotalDeps = document.getElementById('valTotalDeps');
@@ -24,86 +35,180 @@ document.addEventListener('DOMContentLoaded', () => {
   const valNotReachable = document.getElementById('valNotReachable');
   const valUncertain = document.getElementById('valUncertain');
 
-  // Posture Bar
-  const barReachable = document.getElementById('barReachable');
-  const barUncertain = document.getElementById('barUncertain');
-  const barSafe = document.getElementById('barSafe');
+  // Posture Slices & Percentages
+  const sliceReachable = document.getElementById('sliceReachable');
+  const sliceUncertain = document.getElementById('sliceUncertain');
+  const sliceSafe = document.getElementById('sliceSafe');
+  const pctReachable = document.getElementById('pctReachable');
+  const pctUncertain = document.getElementById('pctUncertain');
+  const pctSafe = document.getElementById('pctSafe');
 
   // Findings & Filters
-  const findingsList = document.getElementById('findingsList');
-  const filterPills = document.querySelectorAll('.filter-pill');
+  const findingsContainer = document.getElementById('findingsContainer');
+  const filterPills = document.querySelectorAll('.gh-pill');
   const countAll = document.getElementById('countAll');
   const countReachable = document.getElementById('countReachable');
   const countSafe = document.getElementById('countSafe');
   const countUncertain = document.getElementById('countUncertain');
-  const findingsSearchInput = document.getElementById('findingsSearchInput');
+  const findingSearchBox = document.getElementById('findingSearchBox');
 
-  // Call Graph SVG
-  const callGraphSvg = document.getElementById('callGraphSvg');
+  // Subnav Badges
+  const subnavAdvisoriesBadge = document.getElementById('subnavAdvisoriesBadge');
+  const subnavDepsBadge = document.getElementById('subnavDepsBadge');
+  const subnavTabs = document.querySelectorAll('.subnav-tab');
 
-  // Inspector Tabs
-  const inspectorTabs = document.querySelectorAll('.inspector-tab');
-  const tabPanes = document.querySelectorAll('.tab-pane');
-  const depsTableBody = document.getElementById('depsTableBody');
-  const tabDepsCount = document.getElementById('tabDepsCount');
+  // Graph SVG
+  const reachabilityGraphSvg = document.getElementById('reachabilityGraphSvg');
+  const graphStateBadge = document.getElementById('graphStateBadge');
+
+  // Bottom Dock
+  const dockTabs = document.querySelectorAll('.dock-tab');
+  const dockPanes = document.querySelectorAll('.dock-pane');
+  const dockDepsTableBody = document.getElementById('dockDepsTableBody');
+  const dockDepsCount = document.getElementById('dockDepsCount');
   const rawJsonBlock = document.getElementById('rawJsonBlock');
   const copyJsonBtn = document.getElementById('copyJsonBtn');
 
-  // Preset Buttons
-  const presetButtons = document.querySelectorAll('.preset-btn');
+  // Fixture Chips
+  const fixtureChips = document.querySelectorAll('.fixture-chip');
 
-  // State
-  let currentScanData = null;
+  // In-memory Uploaded Files Cache
+  let stagedUploadedFiles = null;
+  let stagedFolderName = null;
+  let currentReportData = null;
   let activeFilter = 'ALL';
 
-  // --- Initial Setup ---
-  checkApiHealth();
-  setupEventListeners();
+  // --- Initialize ---
+  checkHealth();
+  setupEventHandlers();
 
-  // Auto run initial demo scan
+  // Run initial default demo scan
   setTimeout(() => {
     executeScan();
-  }, 300);
+  }, 250);
 
-  // --- Functions ---
+  // ========================================================================
+  // 1. Abnormal AI Interactive 3D Perspective Wave & Particle Mesh
+  // ========================================================================
+  function initAbnormalWaveCanvas() {
+    const canvas = document.getElementById('abnormalWaveCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
-  async function checkApiHealth() {
-    try {
-      const resp = await fetch('/api/health');
-      if (resp.ok) {
-        apiStatusBadge.classList.remove('offline');
-        apiStatusBadge.classList.add('online');
-        apiStatusBadge.querySelector('.status-label').textContent = 'API Ready: Port 8000';
-      } else {
-        throw new Error('API returned ' + resp.status);
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    // Wave grid parameters
+    const cols = 28;
+    const rows = 18;
+    let time = 0;
+    let mouse = { x: width / 2, y: height / 2, radius: 200 };
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    function renderWave() {
+      ctx.clearRect(0, 0, width, height);
+
+      const cellW = width / cols;
+      const cellH = (height * 0.75) / rows;
+      const startY = height * 0.15;
+
+      // Draw perspective wave lines
+      for (let r = 0; r < rows; r++) {
+        ctx.beginPath();
+        for (let c = 0; c <= cols; c++) {
+          const x = c * cellW;
+          // 3D perspective sine wave distortion
+          const wave1 = Math.sin((c * 0.3) + (time * 0.03) + (r * 0.2)) * 14;
+          const wave2 = Math.cos((r * 0.25) + (time * 0.02)) * 10;
+          
+          // Cursor magnetic ripple
+          const dx = x - mouse.x;
+          const dy = (startY + (r * cellH)) - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          let mouseOffset = 0;
+          if (dist < mouse.radius) {
+            mouseOffset = Math.sin((1 - dist / mouse.radius) * Math.PI) * 22;
+          }
+
+          const y = startY + (r * cellH) + wave1 + wave2 - mouseOffset;
+
+          if (c === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+
+          // Draw small glowing cyber node points on every 2nd intersection
+          if (c % 2 === 0 && r % 2 === 0) {
+            const alpha = 0.2 + (Math.sin(time * 0.05 + c + r) * 0.15);
+            ctx.fillStyle = `rgba(168, 85, 247, ${Math.max(0.05, alpha)})`;
+            ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+          }
+        }
+
+        // Depth perspective opacity
+        const depthAlpha = 0.04 + ((r / rows) * 0.08);
+        ctx.strokeStyle = `rgba(139, 92, 246, ${depthAlpha})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
       }
-    } catch (err) {
-      apiStatusBadge.classList.remove('online');
-      apiStatusBadge.classList.add('offline');
-      apiStatusBadge.querySelector('.status-label').textContent = 'API Offline (Start FastAPI)';
+
+      time++;
+      requestAnimationFrame(renderWave);
+    }
+
+    renderWave();
+  }
+
+  // ========================================================================
+  // 2. Health Check & Core Event Handlers
+  // ========================================================================
+  async function checkHealth() {
+    try {
+      const res = await fetch('/api/health');
+      if (res.ok) {
+        apiTelemetryChip.classList.remove('offline');
+        apiStatusText.textContent = 'Engine Live: Port 8000';
+      } else {
+        throw new Error();
+      }
+    } catch {
+      apiTelemetryChip.classList.add('offline');
+      apiStatusText.textContent = 'Engine Offline (Start Backend)';
     }
   }
 
-  function setupEventListeners() {
-    // Preset Buttons
-    presetButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        presetButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        projectPathInput.value = btn.dataset.path;
+  function setupEventHandlers() {
+    // Quick Fixture Chips
+    fixtureChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        fixtureChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        stagedUploadedFiles = null;
+        stagedFolderName = null;
+        uploadedFilesStatus.textContent = 'Fixture selected';
+        projectPathInput.value = chip.dataset.path;
         executeScan();
       });
     });
 
     // Network Toggle
     networkToggle.addEventListener('change', () => {
-      networkLabel.textContent = networkToggle.checked ? 'Live OSV API' : 'Curated Offline';
+      networkLabel.textContent = networkToggle.checked
+        ? 'Live OSV API (3s timeout)'
+        : 'Curated Offline Mode';
     });
 
     // Run Scan Button
     runScanBtn.addEventListener('click', executeScan);
 
-    // Keyboard shortcut: Cmd+Enter / Ctrl+Enter
+    // Keyboard Shortcut (Cmd+Enter or Ctrl+Enter)
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
@@ -111,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Search Input
-    findingsSearchInput.addEventListener('input', () => {
-      renderFindings(currentScanData ? currentScanData.findings : []);
+    // Findings Filter Search
+    findingSearchBox.addEventListener('input', () => {
+      renderFindings(currentReportData ? currentReportData.findings : []);
     });
 
     // Filter Pills
@@ -122,109 +227,303 @@ document.addEventListener('DOMContentLoaded', () => {
         filterPills.forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         activeFilter = pill.dataset.filter;
-        renderFindings(currentScanData ? currentScanData.findings : []);
+        renderFindings(currentReportData ? currentReportData.findings : []);
       });
     });
 
-    // Bottom Inspector Tabs
-    inspectorTabs.forEach(tab => {
+    // Subnav Tabs
+    subnavTabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        inspectorTabs.forEach(t => t.classList.remove('active'));
-        tabPanes.forEach(p => p.classList.remove('active'));
-
+        subnavTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        const targetPane = document.getElementById(tab.dataset.target);
-        if (targetPane) targetPane.classList.add('active');
+        const view = tab.dataset.view;
+        if (view === 'graphView') {
+          document.querySelector('.graph-workspace').scrollIntoView({ behavior: 'smooth' });
+        } else if (view === 'securityView') {
+          document.querySelector('.findings-workspace').scrollIntoView({ behavior: 'smooth' });
+        } else if (view === 'depsView' || view === 'honestyView') {
+          document.querySelector('.bottom-dock-card').scrollIntoView({ behavior: 'smooth' });
+          if (view === 'depsView') switchDockTab('paneDeps');
+          if (view === 'honestyView') switchDockTab('paneHonesty');
+        }
       });
     });
+
+    // Bottom Dock Tabs
+    dockTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        switchDockTab(tab.dataset.pane);
+      });
+    });
+
+    function switchDockTab(paneId) {
+      dockTabs.forEach(t => t.classList.remove('active'));
+      dockPanes.forEach(p => p.classList.remove('active'));
+      const activeTab = Array.from(dockTabs).find(t => t.dataset.pane === paneId);
+      if (activeTab) activeTab.classList.add('active');
+      const targetPane = document.getElementById(paneId);
+      if (targetPane) targetPane.classList.add('active');
+    }
 
     // Copy JSON
     copyJsonBtn.addEventListener('click', () => {
-      if (!currentScanData) return;
-      navigator.clipboard.writeText(JSON.stringify(currentScanData, null, 2)).then(() => {
+      if (!currentReportData) return;
+      navigator.clipboard.writeText(JSON.stringify(currentReportData, null, 2)).then(() => {
         const orig = copyJsonBtn.textContent;
-        copyJsonBtn.textContent = 'Copied!';
+        copyJsonBtn.textContent = 'Copied to Clipboard!';
         setTimeout(() => copyJsonBtn.textContent = orig, 1800);
       });
     });
+
+    // ======================================================================
+    // 3. GitHub Drag-and-Drop & Folder Upload Implementation
+    // ======================================================================
+    uploadFolderTriggerBtn.addEventListener('click', () => folderInput.click());
+    browseFolderLink.addEventListener('click', () => folderInput.click());
+
+    folderInput.addEventListener('change', async (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        await handleFilesList(e.target.files);
+      }
+    });
+
+    // Drag and Drop listeners
+    ['dragenter', 'dragover'].forEach(name => {
+      folderDropzone.addEventListener(name, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        folderDropzone.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(name => {
+      folderDropzone.addEventListener(name, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        folderDropzone.classList.remove('drag-over');
+      });
+    });
+
+    folderDropzone.addEventListener('drop', async (e) => {
+      const items = e.dataTransfer.items;
+      if (items && items.length > 0) {
+        const files = await getAllFilesFromDataTransfer(items);
+        if (files.length > 0) {
+          await handleFilesList(files);
+        }
+      } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        await handleFilesList(e.dataTransfer.files);
+      }
+    });
   }
 
+  // Recursive directory reader for drag-and-drop folders
+  async function getAllFilesFromDataTransfer(items) {
+    const files = [];
+
+    async function traverseEntry(entry, path = '') {
+      if (entry.isFile) {
+        const file = await new Promise((resolve) => entry.file(resolve));
+        file._relativePath = path ? `${path}/${file.name}` : file.name;
+        files.push(file);
+      } else if (entry.isDirectory) {
+        const dirReader = entry.createReader();
+        const entries = await new Promise((resolve) => {
+          dirReader.readEntries(resolve);
+        });
+        for (const child of entries) {
+          await traverseEntry(child, path ? `${path}/${entry.name}` : entry.name);
+        }
+      }
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.webkitGetAsEntry) {
+        const entry = item.webkitGetAsEntry();
+        if (entry) await traverseEntry(entry);
+      } else {
+        const file = item.getAsFile();
+        if (file) files.push(file);
+      }
+    }
+
+    return files;
+  }
+
+  // Handle uploaded files list
+  async function handleFilesList(fileList) {
+    const fileArray = Array.from(fileList);
+    const readPromises = [];
+    const validFiles = [];
+
+    for (const file of fileArray) {
+      // Determine relative path
+      const relPath = file.webkitRelativePath || file._relativePath || file.name;
+      // Filter for Python files, requirements.txt, or text config
+      if (relPath.endsWith('.py') || relPath.endsWith('requirements.txt') || relPath.endsWith('.txt')) {
+        const p = file.text().then(content => {
+          validFiles.push({ path: relPath, content: content });
+        });
+        readPromises.push(p);
+      }
+    }
+
+    await Promise.all(readPromises);
+
+    if (validFiles.length === 0) {
+      uploadedFilesStatus.textContent = 'No .py or requirements.txt files found in folder';
+      return;
+    }
+
+    // Determine top folder name
+    let folderName = 'uploaded_project';
+    if (validFiles[0].path.includes('/')) {
+      folderName = validFiles[0].path.split('/')[0];
+    }
+
+    stagedUploadedFiles = validFiles;
+    stagedFolderName = folderName;
+
+    // Update UI
+    uploadedFilesStatus.textContent = `Folder loaded: ${folderName} (${validFiles.length} files)`;
+    projectPathInput.value = `[Uploaded Folder: ${folderName}]`;
+    fixtureChips.forEach(c => c.classList.remove('active'));
+
+    // Update GitHub File Explorer Table
+    renderFileExplorerTable(validFiles);
+
+    // Automatically trigger reachability scan on the uploaded folder!
+    executeScan();
+  }
+
+  function renderFileExplorerTable(files) {
+    filesTableBody.innerHTML = '';
+    fileCountBadge.textContent = `${files.length} files in active target`;
+
+    files.forEach(f => {
+      const tr = document.createElement('tr');
+      const isReq = f.path.endsWith('requirements.txt');
+      const iconColor = isReq ? '#38bdf8' : '#a855f7';
+      const statusText = isReq ? 'Pinned Specs' : 'Python AST';
+      const statusClass = isReq ? 'green' : 'purple';
+      const roleText = isReq 
+        ? 'Dependency specifications & OSV matching'
+        : 'AST call site & entry point extraction';
+
+      tr.innerHTML = `
+        <td class="file-col">
+          <svg class="file-icon" width="14" height="14" viewBox="0 0 16 16" fill="${iconColor}"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l3.914 3.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0114.25 16H3.75A1.75 1.75 0 012 14.25V1.75z"/></svg>
+          <span class="file-path-text">${escapeHtml(f.path)}</span>
+        </td>
+        <td><span class="tag-status ${statusClass}">${statusText}</span></td>
+        <td class="file-desc-text">${roleText}</td>
+      `;
+      filesTableBody.appendChild(tr);
+    });
+  }
+
+  // ========================================================================
+  // 4. Execute Reachability Scan (Preset path OR Uploaded folder)
+  // ========================================================================
   async function executeScan() {
-    const projectPath = projectPathInput.value.trim();
-    if (!projectPath) return;
-
-    // UI Loading state
     runScanBtn.disabled = true;
-    btnSpinner.style.display = 'inline-block';
-    scanningPulse.classList.remove('hidden');
+    radarScanBanner.classList.remove('hidden');
 
-    const loadingSteps = [
-      'Reading requirements.txt & normalising package names...',
-      'Matching against OSV database & offline symbol map...',
-      'Parsing Python AST trees (zero code execution)...',
-      'Traversing call graph via BFS from entrypoints...',
-      'Computing reachability verdicts & evidence chains...'
+    const steps = [
+      'Extracting dependencies from requirements.txt...',
+      'Querying OSV advisory database & offline curated symbol map...',
+      'Constructing recursive Python AST call graph (0% execution)...',
+      'Traversing BFS path from entry points to vulnerability sinks...',
+      'Synthesizing reachability proofs & conservative verdicts...'
     ];
 
     let stepIdx = 0;
-    const interval = setInterval(() => {
-      if (stepIdx < loadingSteps.length) {
-        pulseText.textContent = loadingSteps[stepIdx++];
+    const stepInterval = setInterval(() => {
+      if (stepIdx < steps.length) {
+        radarStepText.textContent = steps[stepIdx++];
       }
     }, 180);
 
     try {
-      const resp = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          project_path: projectPath,
-          use_network: networkToggle.checked
-        })
-      });
+      let resp;
 
-      clearInterval(interval);
-
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({ detail: 'Unknown scan error' }));
-        throw new Error(errData.detail || `Server returned ${resp.status}`);
+      if (stagedUploadedFiles && stagedUploadedFiles.length > 0) {
+        // Use POST /api/scan/upload for in-memory folder uploads
+        resp = await fetch('/api/scan/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            files: stagedUploadedFiles,
+            project_name: stagedFolderName || 'custom_upload',
+            use_network: networkToggle.checked
+          })
+        });
+      } else {
+        // Use standard POST /api/scan for repository fixtures
+        const path = projectPathInput.value.trim() || 'examples/vulnerable_app';
+        resp = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            project_path: path,
+            use_network: networkToggle.checked
+          })
+        });
       }
 
-      const data = await resp.json();
-      currentScanData = data;
-      renderScanResults(data);
+      clearInterval(stepInterval);
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ detail: 'Analysis failed' }));
+        throw new Error(err.detail || `Server returned ${resp.status}`);
+      }
+
+      const report = await resp.json();
+      currentReportData = report;
+      renderScanReport(report);
 
     } catch (err) {
-      clearInterval(interval);
+      clearInterval(stepInterval);
       showErrorState(err.message);
     } finally {
       runScanBtn.disabled = false;
-      btnSpinner.style.display = 'none';
-      scanningPulse.classList.add('hidden');
+      radarScanBanner.classList.add('hidden');
     }
   }
 
-  function renderScanResults(report) {
+  // ========================================================================
+  // 5. Render Scan Report & Visual Elements
+  // ========================================================================
+  function renderScanReport(report) {
     const summary = report.summary;
 
-    // 1. Update Metrics
+    // 1. Metric values
     valTotalDeps.textContent = summary.total_dependencies;
     valTotalAdvisories.textContent = summary.total_advisories;
     valReachable.textContent = summary.reachable_count;
     valNotReachable.textContent = summary.not_reachable_count;
     valUncertain.textContent = summary.uncertain_count;
 
-    // 2. Posture Bar
-    const totalFindings = summary.total_advisories || 1;
-    const pReach = ((summary.reachable_count / totalFindings) * 100).toFixed(1);
-    const pUncert = ((summary.uncertain_count / totalFindings) * 100).toFixed(1);
-    const pSafe = ((summary.not_reachable_count / totalFindings) * 100).toFixed(1);
+    // Subnav counters
+    subnavAdvisoriesBadge.textContent = summary.total_advisories;
+    subnavDepsBadge.textContent = summary.total_dependencies;
 
-    barReachable.style.width = `${pReach}%`;
-    barUncertain.style.width = `${pUncert}%`;
-    barSafe.style.width = `${pSafe}%`;
+    // 2. Posture Bar Calculations
+    const total = summary.total_advisories || 1;
+    const pReach = ((summary.reachable_count / total) * 100).toFixed(0);
+    const pUncert = ((summary.uncertain_count / total) * 100).toFixed(0);
+    const pSafe = ((summary.not_reachable_count / total) * 100).toFixed(0);
 
-    // 3. Filter Counts
+    sliceReachable.style.width = `${pReach}%`;
+    sliceUncertain.style.width = `${pUncert}%`;
+    sliceSafe.style.width = `${pSafe}%`;
+
+    pctReachable.textContent = `${pReach}%`;
+    pctUncertain.textContent = `${pUncert}%`;
+    pctSafe.textContent = `${pSafe}%`;
+
+    // 3. Filter counts
     countAll.textContent = report.findings.length;
     countReachable.textContent = summary.reachable_count;
     countSafe.textContent = summary.not_reachable_count;
@@ -233,27 +532,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Render Findings
     renderFindings(report.findings);
 
-    // 5. Render Dependencies Table
-    renderDependencies(report.dependencies);
+    // 5. Render Bottom Dependencies
+    renderDependenciesTable(report.dependencies);
 
-    // 6. Render Call Graph (DAG)
-    renderCallGraph(report);
+    // 6. Render Animated Reachability Call Graph (DAG)
+    renderAnimatedCallGraph(report);
 
-    // 7. Update Raw JSON
+    // 7. Update Raw JSON code block
     rawJsonBlock.textContent = JSON.stringify(report, null, 2);
   }
 
   function renderFindings(findings) {
-    findingsList.innerHTML = '';
-
-    const query = findingsSearchInput.value.toLowerCase().trim();
+    findingsContainer.innerHTML = '';
+    const query = findingSearchBox.value.toLowerCase().trim();
 
     const filtered = findings.filter(f => {
-      // Filter tab check
-      if (activeFilter !== 'ALL' && f.verdict !== activeFilter) {
-        return false;
-      }
-      // Search query check
+      if (activeFilter !== 'ALL' && f.verdict !== activeFilter) return false;
       if (query) {
         const text = `${f.package} ${f.advisory_id} ${f.summary} ${f.vulnerable_symbol || ''}`.toLowerCase();
         return text.includes(query);
@@ -262,9 +556,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (filtered.length === 0) {
-      findingsList.innerHTML = `
-        <div class="empty-findings">
-          <p>No findings matching the current filter criteria.</p>
+      findingsContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+          <p>No security findings matching active filter (${activeFilter}).</p>
         </div>
       `;
       return;
@@ -272,45 +566,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     filtered.forEach(finding => {
       const card = document.createElement('div');
-      card.className = 'finding-card';
+      card.className = 'gh-finding-card';
 
-      let verdictBadgeClass = 'tag-safe';
-      let verdictLabel = 'NOT REACHABLE';
+      let badgeClass = 'badge-safe';
+      let badgeLabel = 'NOT REACHABLE';
       if (finding.verdict === 'REACHABLE') {
-        verdictBadgeClass = 'tag-reachable';
-        verdictLabel = 'REACHABLE';
+        badgeClass = 'badge-reachable';
+        badgeLabel = 'REACHABLE';
       } else if (finding.verdict === 'UNCERTAIN') {
-        verdictBadgeClass = 'tag-uncertain';
-        verdictLabel = 'UNCERTAIN';
+        badgeClass = 'badge-uncertain';
+        badgeLabel = 'UNCERTAIN';
       }
 
-      // Evidence steps HTML
+      // Evidence Trace HTML
       let evidenceHtml = '';
       if (finding.evidence && finding.evidence.length > 0) {
         evidenceHtml = `
-          <div class="code-evidence-box">
-            <div class="evidence-header">
-              <span class="evidence-path">Call Trace (${finding.evidence.length} Step${finding.evidence.length > 1 ? 's' : ''})</span>
-              <span>${escapeHtml(finding.evidence[0].file)}:${finding.evidence[0].line}</span>
+          <div class="gh-code-evidence">
+            <div class="code-header-bar">
+              <span>Code Call Trace (${finding.evidence.length} Step${finding.evidence.length > 1 ? 's' : ''})</span>
+              <span>${escapeHtml(finding.evidence[0].file)}:L${finding.evidence[0].line}</span>
             </div>
             ${finding.evidence.map(step => `
-              <div class="evidence-step">
-                <span class="step-from">${escapeHtml(step.from)}</span>
-                <span class="step-arrow">➔ calls ➔</span>
-                <span class="step-to">${escapeHtml(step.to)}</span>
+              <div class="code-trace-row">
+                <span class="trace-from">${escapeHtml(step.from)}</span>
+                <span class="trace-arrow">── calls ──▶</span>
+                <span class="trace-to">${escapeHtml(step.to)}</span>
               </div>
             `).join('')}
           </div>
         `;
       }
 
-      // Uncertainty reasons if present
+      // Uncertainty hazards
       let uncertaintyHtml = '';
       if (finding.uncertainty_reasons && finding.uncertainty_reasons.length > 0) {
         uncertaintyHtml = `
-          <div class="code-evidence-box" style="border-color: rgba(245, 158, 11, 0.4);">
-            <div class="evidence-header" style="color: #f59e0b;">
-              <span>Dynamic Reflection Hazards</span>
+          <div class="gh-code-evidence" style="border-color: rgba(245, 158, 11, 0.4);">
+            <div class="code-header-bar" style="color: #f59e0b;">
+              <span>Dynamic Reflection Hazards Flagged</span>
             </div>
             <div style="padding: 10px 14px; font-size: 0.8rem; color: #cbd5e1;">
               ${finding.uncertainty_reasons.map(r => `<div>• ${escapeHtml(r)}</div>`).join('')}
@@ -320,73 +614,71 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       card.innerHTML = `
-        <div class="finding-header">
-          <div class="pkg-title-row">
-            <span class="pkg-name">${escapeHtml(finding.package)}</span>
-            <span class="version-badge">v${escapeHtml(finding.installed_version || 'unknown')}</span>
-            <a href="https://osv.dev/vulnerability/${escapeHtml(finding.advisory_id)}" target="_blank" class="advisory-id-link">
+        <div class="card-headline">
+          <div class="pkg-title-group">
+            <span class="pkg-name-text">${escapeHtml(finding.package)}</span>
+            <span class="version-pill">v${escapeHtml(finding.installed_version || 'unknown')}</span>
+            <a href="https://osv.dev/vulnerability/${escapeHtml(finding.advisory_id)}" target="_blank" class="advisory-badge-link">
               ${escapeHtml(finding.advisory_id)} ↗
             </a>
           </div>
-          <span class="verdict-tag ${verdictBadgeClass}">${verdictLabel}</span>
+          <span class="risk-badge ${badgeClass}">${badgeLabel}</span>
         </div>
 
-        <p class="finding-summary">${escapeHtml(finding.summary)}</p>
+        <p class="card-desc">${escapeHtml(finding.summary)}</p>
 
         ${evidenceHtml}
         ${uncertaintyHtml}
 
-        <div class="verdict-rationale">
-          <strong>Analysis:</strong> ${escapeHtml(finding.reason)}
+        <div class="card-rationale">
+          <strong>Reachability Proof:</strong> ${escapeHtml(finding.reason)}
         </div>
       `;
 
-      findingsList.appendChild(card);
+      findingsContainer.appendChild(card);
     });
   }
 
-  function renderDependencies(dependencies) {
-    tabDepsCount.textContent = dependencies.length;
-    depsTableBody.innerHTML = '';
+  function renderDependenciesTable(deps) {
+    dockDepsCount.textContent = deps.length;
+    dockDepsTableBody.innerHTML = '';
 
-    if (dependencies.length === 0) {
-      depsTableBody.innerHTML = '<tr><td colspan="5" class="empty-state">No dependencies parsed.</td></tr>';
+    if (deps.length === 0) {
+      dockDepsTableBody.innerHTML = '<tr><td colspan="5" class="empty-table-state">No dependencies parsed in project.</td></tr>';
       return;
     }
 
-    dependencies.forEach(dep => {
+    deps.forEach(d => {
       const tr = document.createElement('tr');
-      const pinnedBadge = dep.is_pinned 
-        ? `<span class="pinned-badge pinned">== ${escapeHtml(dep.version || '')} (Pinned)</span>`
-        : `<span class="pinned-badge unpinned">Unpinned</span>`;
+      const pinTag = d.is_pinned
+        ? `<span class="tag-status green">== ${escapeHtml(d.version || '')} (Pinned)</span>`
+        : `<span class="tag-status purple">Unpinned</span>`;
 
       tr.innerHTML = `
-        <td style="font-weight: 600; color: #fff;">${escapeHtml(dep.name)}</td>
-        <td>${escapeHtml(dep.version || '—')}</td>
-        <td>${pinnedBadge}</td>
-        <td style="color: #94a3b8;">${escapeHtml(dep.source_file)}</td>
-        <td style="color: #c084fc;">L${dep.line}</td>
+        <td style="font-weight: 700; color: #fff;">${escapeHtml(d.name)}</td>
+        <td>${escapeHtml(d.version || '—')}</td>
+        <td>${pinTag}</td>
+        <td style="color: #8b949e;">${escapeHtml(d.source_file)}</td>
+        <td style="color: #c084fc;">Line ${d.line}</td>
       `;
-      depsTableBody.appendChild(tr);
+      dockDepsTableBody.appendChild(tr);
     });
   }
 
-  /**
-   * Interactive Reachability Call Graph (DAG)
-   * Renders SVG nodes: Entrypoint -> Call Sites -> Vulnerable Sinks
-   */
-  function renderCallGraph(report) {
-    callGraphSvg.innerHTML = '';
+  // ========================================================================
+  // 6. Animated Abnormal AI Call Graph DAG with Signal Packets
+  // ========================================================================
+  function renderAnimatedCallGraph(report) {
+    reachabilityGraphSvg.innerHTML = '';
 
-    const width = callGraphSvg.clientWidth || 550;
-    const height = 440;
+    const width = reachabilityGraphSvg.clientWidth || 560;
+    const height = 450;
 
-    // Determine graph nodes based on findings
     const firstFinding = report.findings && report.findings[0];
     const isReachable = firstFinding && firstFinding.verdict === 'REACHABLE';
     const isUncertain = firstFinding && firstFinding.verdict === 'UNCERTAIN';
 
-    // SVG Definitions (Gradients and markers)
+    // SVG Defs with Markers & Flow Filters
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     defs.innerHTML = `
       <marker id="arrowRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
@@ -395,151 +687,154 @@ document.addEventListener('DOMContentLoaded', () => {
       <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
         <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981" />
       </marker>
-      <marker id="arrowOrange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
         <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b" />
       </marker>
-      <filter id="glowEffect">
-        <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
+      <filter id="neonHalo" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="4" result="blur" />
         <feMerge>
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
         </feMerge>
       </filter>
     `;
-    callGraphSvg.appendChild(defs);
+    reachabilityGraphSvg.appendChild(defs);
 
-    // Nodes setup
+    // Node topology
     const nodes = [
-      { id: 'entry', label: 'main() [Entry]', sub: 'app.py:10', x: 80, y: height / 2, type: 'entry' },
-      { id: 'internal', label: 'process_input()', sub: 'app.py:5', x: width / 2, y: height / 2 - 40, type: 'internal' },
-      { id: 'sink', label: 'yaml.load() [Sink]', sub: 'pyyaml (CVE-2020-14343)', x: width - 110, y: height / 2 + 30, type: 'sink' }
+      { id: 'n1', label: 'main()', file: 'app.py:10', type: 'entry', x: 80, y: height / 2 },
+      { id: 'n2', label: 'process_input()', file: 'app.py:5', type: 'internal', x: width / 2, y: (height / 2) - 40 },
+      { id: 'n3', label: 'yaml.load()', file: 'pyyaml (CVE-2020-14343)', type: 'sink', x: width - 110, y: (height / 2) + 30 }
     ];
 
     if (!isReachable && !isUncertain) {
       nodes[2].label = 'yaml.safe_load()';
-      nodes[2].sub = 'Verified Safe Function';
+      nodes[2].file = 'Verified Safe Sink';
+      graphStateBadge.textContent = 'Path: Blocked / Safe';
+      graphStateBadge.style.color = '#10b981';
     } else if (isUncertain) {
-      nodes[1].label = 'getattr(yaml, ... )';
-      nodes[1].sub = 'Dynamic Reflection';
+      nodes[1].label = 'getattr(yaml, ...)';
+      nodes[1].file = 'Dynamic Hazard';
+      graphStateBadge.textContent = 'Path: Ambiguous (Reflection)';
+      graphStateBadge.style.color = '#f59e0b';
+    } else {
+      graphStateBadge.textContent = 'Path: REACHABLE SINK DETECTED';
+      graphStateBadge.style.color = '#f43f5e';
     }
 
-    // Color coordination
-    let edgeColor = '#10b981';
-    let markerId = 'arrowGreen';
-    let edgeDash = 'none';
+    // Boundary Line between User Code & External Dependency
+    const boundX = width - 180;
+    const boundary = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    boundary.setAttribute('x1', boundX);
+    boundary.setAttribute('y1', 30);
+    boundary.setAttribute('x2', boundX);
+    boundary.setAttribute('y2', height - 30);
+    boundary.setAttribute('stroke', 'rgba(255, 255, 255, 0.1)');
+    boundary.setAttribute('stroke-dasharray', '5,5');
+    reachabilityGraphSvg.appendChild(boundary);
 
-    if (isReachable) {
-      edgeColor = '#f43f5e';
-      markerId = 'arrowRed';
-    } else if (isUncertain) {
-      edgeColor = '#f59e0b';
-      markerId = 'arrowOrange';
-      edgeDash = '6,4';
-    }
+    const boundLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    boundLabel.setAttribute('x', boundX + 8);
+    boundLabel.setAttribute('y', 45);
+    boundLabel.setAttribute('fill', '#6e7681');
+    boundLabel.setAttribute('font-size', '10');
+    boundLabel.setAttribute('font-family', 'var(--font-mono)');
+    boundLabel.textContent = 'EXTERNAL DEPENDENCY BOUNDARY';
+    reachabilityGraphSvg.appendChild(boundLabel);
 
-    // Draw connecting edges
-    const p1 = `M ${nodes[0].x} ${nodes[0].y} Q ${(nodes[0].x + nodes[1].x)/2} ${nodes[1].y - 30} ${nodes[1].x} ${nodes[1].y}`;
-    const p2 = `M ${nodes[1].x} ${nodes[1].y} Q ${(nodes[1].x + nodes[2].x)/2} ${nodes[2].y + 30} ${nodes[2].x} ${nodes[2].y}`;
+    // Curved Paths
+    const pathId1 = 'curvePath1';
+    const pathId2 = 'curvePath2';
+    const d1 = `M ${nodes[0].x} ${nodes[0].y} Q ${(nodes[0].x + nodes[1].x)/2} ${nodes[1].y - 35} ${nodes[1].x} ${nodes[1].y}`;
+    const d2 = `M ${nodes[1].x} ${nodes[1].y} Q ${(nodes[1].x + nodes[2].x)/2} ${nodes[2].y + 35} ${nodes[2].x} ${nodes[2].y}`;
 
-    // Glow paths
-    const drawEdge = (d, color, marker, dash) => {
+    let strokeCol = isReachable ? '#f43f5e' : (isUncertain ? '#f59e0b' : '#38bdf8');
+    let marker = isReachable ? 'arrowRed' : (isUncertain ? 'arrowAmber' : 'arrowGreen');
+
+    function createCurve(id, d, color, mark) {
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('id', id);
       path.setAttribute('d', d);
       path.setAttribute('fill', 'none');
       path.setAttribute('stroke', color);
       path.setAttribute('stroke-width', '2.5');
-      if (dash !== 'none') path.setAttribute('stroke-dasharray', dash);
-      path.setAttribute('marker-end', `url(#${marker})`);
-      path.setAttribute('filter', 'url(#glowEffect)');
+      path.setAttribute('marker-end', `url(#${mark})`);
+      path.setAttribute('filter', 'url(#neonHalo)');
       return path;
-    };
-
-    callGraphSvg.appendChild(drawEdge(p1, isReachable ? '#f43f5e' : (isUncertain ? '#f59e0b' : '#38bdf8'), isReachable ? 'arrowRed' : (isUncertain ? 'arrowOrange' : 'arrowGreen'), edgeDash));
-    
-    // Boundary line between User project and Dependency
-    const boundaryX = width - 180;
-    const boundaryLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    boundaryLine.setAttribute('x1', boundaryX);
-    boundaryLine.setAttribute('y1', 40);
-    boundaryLine.setAttribute('x2', boundaryX);
-    boundaryLine.setAttribute('y2', height - 40);
-    boundaryLine.setAttribute('stroke', 'rgba(255, 255, 255, 0.12)');
-    boundaryLine.setAttribute('stroke-dasharray', '4,4');
-    callGraphSvg.appendChild(boundaryLine);
-
-    const boundaryText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    boundaryText.setAttribute('x', boundaryX + 10);
-    boundaryText.setAttribute('y', 60);
-    boundaryText.setAttribute('fill', '#64748b');
-    boundaryText.setAttribute('font-size', '11');
-    boundaryText.setAttribute('font-family', 'var(--font-mono)');
-    boundaryText.textContent = 'DEPENDENCY BOUNDARY';
-    callGraphSvg.appendChild(boundaryText);
-
-    if (isReachable) {
-      callGraphSvg.appendChild(drawEdge(p2, '#f43f5e', 'arrowRed', 'none'));
-    } else if (isUncertain) {
-      callGraphSvg.appendChild(drawEdge(p2, '#f59e0b', 'arrowOrange', '6,4'));
     }
 
-    // Draw Nodes
-    nodes.forEach(node => {
+    reachabilityGraphSvg.appendChild(createCurve(pathId1, d1, strokeCol, marker));
+    reachabilityGraphSvg.appendChild(createCurve(pathId2, d2, isReachable ? '#f43f5e' : (isUncertain ? '#f59e0b' : '#10b981'), marker));
+
+    // Animated Flowing Signal Packets (Moving along the path!)
+    function createFlowPacket(pathId, color) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('r', '4');
+      circle.setAttribute('fill', color);
+      circle.setAttribute('filter', 'url(#neonHalo)');
+
+      const anim = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion');
+      anim.setAttribute('dur', '1.8s');
+      anim.setAttribute('repeatCount', 'indefinite');
+      anim.innerHTML = `<mpath href="#${pathId}" />`;
+      circle.appendChild(anim);
+
+      return circle;
+    }
+
+    reachabilityGraphSvg.appendChild(createFlowPacket(pathId1, strokeCol));
+    reachabilityGraphSvg.appendChild(createFlowPacket(pathId2, isReachable ? '#f43f5e' : (isUncertain ? '#f59e0b' : '#10b981')));
+
+    // Nodes Rendering
+    nodes.forEach(n => {
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+      g.setAttribute('transform', `translate(${n.x}, ${n.y})`);
 
-      let strokeColor = '#38bdf8';
-      let fillColor = 'rgba(56, 189, 248, 0.15)';
+      let stroke = '#38bdf8';
+      if (n.type === 'internal') stroke = '#c084fc';
+      else if (n.type === 'sink') stroke = isReachable ? '#f43f5e' : (isUncertain ? '#f59e0b' : '#10b981');
 
-      if (node.type === 'internal') {
-        strokeColor = '#c084fc';
-        fillColor = 'rgba(192, 132, 252, 0.15)';
-      } else if (node.type === 'sink') {
-        strokeColor = isReachable ? '#f43f5e' : (isUncertain ? '#f59e0b' : '#10b981');
-        fillColor = isReachable ? 'rgba(244, 63, 94, 0.2)' : 'rgba(16, 185, 129, 0.15)';
-      }
+      const box = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      box.setAttribute('x', '-65');
+      box.setAttribute('y', '-25');
+      box.setAttribute('width', '130');
+      box.setAttribute('height', '50');
+      box.setAttribute('rx', '8');
+      box.setAttribute('fill', '#090d14');
+      box.setAttribute('stroke', stroke);
+      box.setAttribute('stroke-width', '2');
+      box.setAttribute('filter', 'url(#neonHalo)');
 
-      // Outer halo
-      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      rect.setAttribute('x', '-70');
-      rect.setAttribute('y', '-26');
-      rect.setAttribute('width', '140');
-      rect.setAttribute('height', '52');
-      rect.setAttribute('rx', '8');
-      rect.setAttribute('fill', '#0e121b');
-      rect.setAttribute('stroke', strokeColor);
-      rect.setAttribute('stroke-width', '2');
-      rect.setAttribute('filter', 'url(#glowEffect)');
+      const t1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t1.setAttribute('text-anchor', 'middle');
+      t1.setAttribute('y', '-2');
+      t1.setAttribute('fill', '#ffffff');
+      t1.setAttribute('font-size', '12');
+      t1.setAttribute('font-weight', '700');
+      t1.setAttribute('font-family', 'var(--font-mono)');
+      t1.textContent = n.label;
 
-      const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      title.setAttribute('text-anchor', 'middle');
-      title.setAttribute('y', '-3');
-      title.setAttribute('fill', '#ffffff');
-      title.setAttribute('font-weight', '700');
-      title.setAttribute('font-size', '12');
-      title.setAttribute('font-family', 'var(--font-mono)');
-      title.textContent = node.label;
+      const t2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t2.setAttribute('text-anchor', 'middle');
+      t2.setAttribute('y', '15');
+      t2.setAttribute('fill', stroke);
+      t2.setAttribute('font-size', '10');
+      t2.setAttribute('font-family', 'var(--font-mono)');
+      t2.textContent = n.file;
 
-      const subtitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      subtitle.setAttribute('text-anchor', 'middle');
-      subtitle.setAttribute('y', '15');
-      subtitle.setAttribute('fill', strokeColor);
-      subtitle.setAttribute('font-size', '10');
-      subtitle.setAttribute('font-family', 'var(--font-mono)');
-      subtitle.textContent = node.sub;
+      g.appendChild(box);
+      g.appendChild(t1);
+      g.appendChild(t2);
 
-      g.appendChild(rect);
-      g.appendChild(title);
-      g.appendChild(subtitle);
-
-      callGraphSvg.appendChild(g);
+      reachabilityGraphSvg.appendChild(g);
     });
   }
 
-  function showErrorState(message) {
-    findingsList.innerHTML = `
-      <div style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 8px; padding: 18px; color: #f43f5e;">
-        <strong>Scan Execution Failed:</strong>
-        <p style="margin-top: 6px; font-size: 0.88rem; color: #cbd5e1;">${escapeHtml(message)}</p>
+  function showErrorState(msg) {
+    findingsContainer.innerHTML = `
+      <div style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); border-radius: 8px; padding: 18px; color: #f43f5e;">
+        <strong>Reachability Analysis Error:</strong>
+        <p style="margin-top: 6px; font-size: 0.86rem; color: #cbd5e1;">${escapeHtml(msg)}</p>
       </div>
     `;
   }
