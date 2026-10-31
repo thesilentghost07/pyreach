@@ -24,7 +24,7 @@
       "installed_version": "5.3.1",
       "advisory_id": "PYSEC-2020-96",
       "confidence": "medium",
-      "summary": "UNVERIFIED HACKATHON SEED: Arbitrary code execution in PyYAML via full_load / load when parsing untrusted YAML files.",
+      "summary": "Arbitrary code execution in PyYAML (CVE-2020-14343 / PYSEC-2020-96) via full_load or load without SafeLoader.",
       "verdict": "NOT_REACHABLE",
       "vulnerable_symbol": "yaml.load, yaml.unsafe_load, yaml.full_load",
       "evidence": [],

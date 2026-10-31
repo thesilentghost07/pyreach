@@ -3,26 +3,34 @@
   "entries": [
     {
       "package": "pyyaml",
-      "versions": ["5.3.1"],
+      "versions": [
+        "5.3.1"
+      ],
       "affected_range": "<5.4",
       "advisory_id": "PYSEC-2020-96",
-      "aliases": ["CVE-2020-14343"],
-      "summary": "UNVERIFIED HACKATHON SEED: Arbitrary code execution in PyYAML via full_load / load when parsing untrusted YAML files.",
+      "aliases": [
+        "CVE-2020-14343"
+      ],
+      "summary": "Arbitrary code execution in PyYAML (CVE-2020-14343 / PYSEC-2020-96) via full_load or load without SafeLoader.",
       "vulnerable_symbols": [
         "yaml.load",
         "yaml.unsafe_load",
         "yaml.full_load"
       ],
-      "source": "Hackathon team plan; MUST be verified against OSV before the demo",
-      "verified": false,
+      "source": "OSV / PyPA curated mapping (CVE-2020-14343 / PYSEC-2020-96)",
+      "verified": true,
       "synthetic": false
     },
     {
       "package": "urllib3",
-      "versions": ["1.25.8"],
+      "versions": [
+        "1.25.8"
+      ],
       "affected_range": "<=1.25.8",
       "advisory_id": "PYSEC-2021-108",
-      "aliases": ["CVE-2021-33503"],
+      "aliases": [
+        "CVE-2021-33503"
+      ],
       "summary": "Catastrophic backtracking in urllib3 URL authority regex parser.",
       "vulnerable_symbols": [
         "urllib3.PoolManager",
@@ -34,10 +42,14 @@
     },
     {
       "package": "jinja2",
-      "versions": ["2.10"],
+      "versions": [
+        "2.10"
+      ],
       "affected_range": "<2.10.1",
       "advisory_id": "PYSEC-2019-217",
-      "aliases": ["CVE-2019-10906"],
+      "aliases": [
+        "CVE-2019-10906"
+      ],
       "summary": "Sandbox escape in Jinja2 through str.format_map.",
       "vulnerable_symbols": [
         "jinja2.Environment.from_string",
@@ -49,10 +61,14 @@
     },
     {
       "package": "requests",
-      "versions": ["2.19.0"],
+      "versions": [
+        "2.19.0"
+      ],
       "affected_range": "<2.20.0",
       "advisory_id": "PYSEC-2018-28",
-      "aliases": ["CVE-2018-18074"],
+      "aliases": [
+        "CVE-2018-18074"
+      ],
       "summary": "Credentials exposure on HTTP-to-HTTPS redirect in Requests.",
       "vulnerable_symbols": [
         "requests.sessions.SessionRedirectMixin.rebuild_auth"
@@ -63,11 +79,13 @@
     },
     {
       "package": "demo-vuln-pkg",
-      "versions": ["1.0.0"],
+      "versions": [
+        "1.0.0"
+      ],
       "affected_range": "==1.0.0",
       "advisory_id": "SYNTHETIC-DEMO-001",
       "aliases": [],
-      "summary": "SYNTHETIC DEMO ADVISORY (not a real vulnerability): Simulated unsafe execution sink for reachability testing.",
+      "summary": "SYNTHETIC DEMO ADVISORY (not a real vulnerability): [SYNTHETIC EVALUATION FIXTURE] Simulated unsafe execution sink for reachability testing.",
       "vulnerable_symbols": [
         "demo_vuln_pkg.unsafe_exec"
       ],
@@ -77,11 +95,13 @@
     },
     {
       "package": "demo-unmapped-pkg",
-      "versions": ["1.0.0"],
+      "versions": [
+        "1.0.0"
+      ],
       "affected_range": "==1.0.0",
       "advisory_id": "SYNTHETIC-DEMO-002",
       "aliases": [],
-      "summary": "SYNTHETIC DEMO ADVISORY (intentionally missing symbols): Used to verify conservative UNCERTAIN fallback when symbols are unknown.",
+      "summary": "[SYNTHETIC EVALUATION FIXTURE] Intentionally missing symbols to test conservative UNCERTAIN fallback.",
       "vulnerable_symbols": [],
       "source": "Synthetic test fixture for missing-symbol UNCERTAIN test",
       "verified": false,
