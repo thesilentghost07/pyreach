@@ -2,7 +2,8 @@
 tests/test_cli.py
 ~~~~~~~~~~~~~~~~~
 Unit and integration tests for backend.cli:
-  - Markdown report generation (counters, tables, badges, remediation callout)
+  - Markdown executive report generation (header bar, high-density table,
+    collapsible deep-dive traces, remediation commands)
   - JSON report generation (schema validation, aliased evidence keys)
   - Exit code handling (default exit 0 vs --fail-on-reachable exit 1)
   - File output handling (--output flag)
@@ -22,6 +23,7 @@ from backend.cli import (
     format_json_report,
     format_markdown_report,
     main,
+    render_markdown_report,
     resolve_targets,
     scan_directory,
 )
@@ -77,20 +79,18 @@ class TestMarkdownFormatting:
             scan_directory(Path(UNCERTAIN_FIXTURE), use_network=False),
         ]
 
-    def test_summary_counters_present(self, fixture_reports: List[ScanReport]) -> None:
-        md = format_markdown_report(fixture_reports)
+    def test_executive_header_and_performance_bar(self, fixture_reports: List[ScanReport]) -> None:
+        md = format_markdown_report(fixture_reports, duration_ms=4.5)
 
         assert "## 🛡️ PyReach Vulnerability Reachability Report" in md
-        assert "- **Analyzed Dependencies:** 3" in md
-        assert "- **Advisories:** 3" in md
-        assert "- **🔴 Reachable:** 1" in md
-        assert "- **🟢 Not Reachable:** 1" in md
-        assert "- **🟡 Uncertain:** 1" in md
+        assert "> **Static AST Reachability Engine** • Scanned in `4.5ms` • Mode: `Deterministic Static Graph (Zero Code Execution)`" in md
+        assert "| 📦 Dependencies Analyzed | 🚨 Advisories Evaluated | 🔴 Confirmed Reachable | 🟢 Suppressed (Not Reachable) | 🟡 Dynamic Hazards |" in md
+        assert "| **3** | **3** | **1** | **1** | **1** |" in md
 
     def test_markdown_table_columns_present(self, fixture_reports: List[ScanReport]) -> None:
         md = format_markdown_report(fixture_reports)
 
-        header = "| Package | CVE / Advisory | Verdict | Impact & Evidence Path |"
+        header = "| Target & Version | Advisory ID | Verdict | Executive Summary |"
         assert header in md
 
     def test_verdict_badges_rendered(self, fixture_reports: List[ScanReport]) -> None:
@@ -100,26 +100,43 @@ class TestMarkdownFormatting:
         assert "🟢 NOT_REACHABLE" in md
         assert "🟡 UNCERTAIN" in md
 
-    def test_evidence_call_chain_rendered(self, fixture_reports: List[ScanReport]) -> None:
+    def test_executive_summaries_rendered(self, fixture_reports: List[ScanReport]) -> None:
         md = format_markdown_report(fixture_reports)
 
-        # Reachable finding must show target sink and call chain
-        assert "**Target Sink:** `yaml.load`" in md
-        assert "**Call Chain:** `app.run` → `yaml.load` (`app.py:4`)" in md
+        assert "Direct execution path detected to `yaml.load`" in md
+        assert "No static call chain to unsafe sinks" in md
+        assert "Dynamic reflection (`getattr`) detected" in md
+
+    def test_collapsible_evidence_traces_rendered(self, fixture_reports: List[ScanReport]) -> None:
+        md = format_markdown_report(fixture_reports)
+
+        # Reachable trace
+        assert "<details>" in md
+        assert "<summary>🔍 <b>View Call Trace: pyyaml (app.run ➔ yaml.load)</b></summary>" in md
+        assert "[Hop 1] Entry Point : app.py:4  ➔ def run()" in md
+        assert "[Hop 2] Call Site   : app.py:4  ➔ yaml.load(\"payload: true\")" in md
+        assert "[Hop 3] Target Sink : yaml.load (arbitrary code execution hazard)" in md
+
+        # Uncertain trace
+        assert "<summary>⚠️ <b>Hazard Details: Dynamic Invocation Detected</b></summary>" in md
+        assert "- **Hazard Type:** Dynamic attribute lookup (`getattr`)" in md
+        assert "- **Source Location:** `app.py:4`" in md
+        assert "- **Rationale:** Static call graph resolution conservatively suspended to avoid false negative guarantees. Manual inspection recommended." in md
 
     def test_remediation_callout_present_for_reachable(self, fixture_reports: List[ScanReport]) -> None:
         md = format_markdown_report(fixture_reports)
 
-        assert "### 🛠️ Remediation & Safe Alternatives" in md
+        assert "### 🛠️ Recommended Remediation Actions" in md
+        assert 'pip install --upgrade "pyyaml>=5.4"' in md
         assert "yaml.safe_load" in md
 
     def test_remediation_callout_absent_when_no_reachable(self) -> None:
         clean_report = scan_directory(Path(NOT_REACHABLE_FIXTURE), use_network=False)
         md = format_markdown_report([clean_report])
 
-        assert "### 🛠️ Remediation & Safe Alternatives" not in md
+        assert "### 🛠️ Recommended Remediation Actions" not in md
         assert "🟢 NOT_REACHABLE" in md
-        assert "No static call path" in md
+        assert "No static call chain to unsafe sinks" in md
 
     def test_empty_findings_handled_cleanly(self) -> None:
         empty_report = ScanReport(
@@ -138,6 +155,11 @@ class TestMarkdownFormatting:
         )
         md = format_markdown_report([empty_report])
         assert "No vulnerability advisories matched for scanned dependencies." in md
+
+    def test_render_markdown_report_alias(self, fixture_reports: List[ScanReport]) -> None:
+        md1 = format_markdown_report(fixture_reports, duration_ms=10.0)
+        md2 = render_markdown_report(fixture_reports, duration_ms=10.0)
+        assert md1 == md2
 
 
 # ---------------------------------------------------------------------------
