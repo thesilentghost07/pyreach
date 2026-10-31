@@ -528,7 +528,7 @@
                                     <span style="width: 7px; height: 7px; border-radius: 50%; background: #e11d48; box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.14); flex-shrink: 0;"></span>
                                     <div style="min-width: 0;">
                                         <div style="color: #f4f4f6; font-size: 12.5px; font-weight: 600; line-height: 1.35; white-space: normal;">
-                                            Reachable (PyYAML CVE-2020-1747)
+                                            Reachable App (PyYAML CVE-2020-14343)
                                         </div>
                                         <div style="font-size: 11px; color: #71717a; margin-top: 2px;">
                                             Auto-fills &amp; Runs Scan
@@ -542,13 +542,13 @@
 
                             <!-- Card 2: Non-Reachable (delay-preset-2) -->
                             <div class="reveal-init delay-preset-2 spotlight-card flex items-center justify-between p-3.5 cursor-pointer group"
-                                 onclick="runPreset('tests/fixtures/safe_app')"
-                                 onmouseenter="updateHudPreview('tests/fixtures/safe_app')">
+                                 onclick="runPreset('tests/fixtures/not_reachable_app')"
+                                 onmouseenter="updateHudPreview('tests/fixtures/not_reachable_app')">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                                     <span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14); flex-shrink: 0;"></span>
                                     <div style="min-width: 0;">
                                         <div style="color: #f4f4f6; font-size: 12.5px; font-weight: 600; line-height: 1.35; white-space: normal;">
-                                            Non-Reachable (Safe pyyaml.safe_load)
+                                            Not Reachable App (Safe pyyaml.safe_load)
                                         </div>
                                         <div style="font-size: 11px; color: #71717a; margin-top: 2px;">
                                             Auto-fills &amp; Runs Scan
@@ -562,13 +562,13 @@
 
                             <!-- Card 3: Uncertain (delay-preset-3) -->
                             <div class="reveal-init delay-preset-3 spotlight-card flex items-center justify-between p-3.5 cursor-pointer group"
-                                 onclick="runPreset('tests/fixtures/dynamic_hazard_app')"
-                                 onmouseenter="updateHudPreview('tests/fixtures/dynamic_hazard_app')">
+                                 onclick="runPreset('tests/fixtures/uncertain_app')"
+                                 onmouseenter="updateHudPreview('tests/fixtures/uncertain_app')">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                                     <span style="width: 7px; height: 7px; border-radius: 50%; background: #d97706; box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.14); flex-shrink: 0;"></span>
                                     <div style="min-width: 0;">
                                         <div style="color: #f4f4f6; font-size: 12.5px; font-weight: 600; line-height: 1.35; white-space: normal;">
-                                            Uncertain (Dynamic getattr Hazard)
+                                            Uncertain App (Dynamic getattr Hazard)
                                         </div>
                                         <div style="font-size: 11px; color: #71717a; margin-top: 2px;">
                                             Auto-fills &amp; Runs Scan
@@ -1205,6 +1205,20 @@
                             <div style="padding: 14px; background: #07070a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; overflow-x: auto;">
                                 <div style="display: flex; align-items: center; min-width: 680px; gap: 4px;">
                                     ${stepsHtml}
+                                </div>
+                            </div>
+                            <!-- Remediation Box for Reachable Findings -->
+                            <div style="margin-top: 12px; padding: 12px 14px; background: rgba(225, 29, 72, 0.05); border: 1px solid rgba(225, 29, 72, 0.25); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                    <div style="display: flex; align-items: center; gap: 6px; color: #fb7185; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                        <span>Remediation Advice</span>
+                                    </div>
+                                    <span style="font-size: 10.5px; color: #71717a; font-family: 'JetBrains Mono', monospace;">Copy-paste fix</span>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: #07070a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 8px 12px; margin-top: 6px;">
+                                    <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #4ade80;">${(finding.package || 'pyyaml').toLowerCase().includes('yaml') ? 'pip install --upgrade "pyyaml>=5.4"' : `pip install --upgrade "${finding.package}>=latest"`}</code>
+                                    <button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent.trim()); this.textContent='Copied!'; setTimeout(() => this.textContent='Copy', 1500);" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #d4d4d8; font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Copy</button>
                                 </div>
                             </div>
                         </div>

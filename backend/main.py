@@ -25,6 +25,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from backend.ast_scanner import scan_project_ast
@@ -68,19 +69,29 @@ class ScanRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-@app.get("/", response_class=HTMLResponse)
-def get_dashboard():
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def serve_index():
     """Serve the PyReach static reachability web dashboard."""
-    dashboard_file = REPO_ROOT / "html" / "main.html"
-    if dashboard_file.is_file():
-        return FileResponse(dashboard_file)
-    return HTMLResponse("<h1>PyReach Dashboard</h1><p>html/main.html not found</p>")
+    for candidate in [
+        REPO_ROOT / "frontend" / "index.html",
+        Path("frontend/index.html"),
+        REPO_ROOT / "html" / "main.html",
+        REPO_ROOT / "index.html",
+    ]:
+        if candidate.is_file():
+            return FileResponse(candidate)
+    return HTMLResponse("<h1>PyReach Dashboard</h1><p>frontend/index.html not found</p>")
 
 
-@app.get("/html/main.html", response_class=HTMLResponse)
+@app.get("/html/main.html", response_class=HTMLResponse, include_in_schema=False)
 def get_dashboard_html():
     """Direct route for dashboard HTML."""
     return FileResponse(REPO_ROOT / "html" / "main.html")
+
+
+frontend_dir = REPO_ROOT / "frontend"
+if frontend_dir.is_dir():
+    app.mount("/frontend", StaticFiles(directory=str(frontend_dir)), name="frontend")
 
 
 @app.get("/api/health")
