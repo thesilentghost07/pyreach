@@ -941,152 +941,6 @@
             triggerScan(fixturePath);
         }
 
-        // Verified Demo Fixture Payloads
-        const DEMO_FIXTURES = {
-            'tests/fixtures/reachable_app': {
-                project: 'tests/fixtures/reachable_app',
-                scanned_at: new Date().toISOString(),
-                summary: { total_dependencies: 2, total_advisories: 2, reachable_count: 1, not_reachable_count: 1, uncertain_count: 0 },
-                findings: [
-                    {
-                        package: 'urllib3',
-                        installed_version: '1.26.4',
-                        advisory_id: 'GHSA-v845-jxx5-vc9f',
-                        confidence: 'high',
-                        summary: 'Cookie leakage on cross-origin redirects (CVE-2023-45803)',
-                        verdict: 'REACHABLE',
-                        vulnerable_symbol: 'urllib3.util.ssl_.ssl_wrap_socket',
-                        evidence: [
-                            { from: 'app.main', to: 'app.handle_webhook', file: 'app.py', line: 20 },
-                            { from: 'app.handle_webhook', to: 'dispatch_remote_sync', file: 'app.py', line: 7 },
-                            { from: 'app.dispatch_remote_sync', to: 'secure_request', file: 'app.py', line: 11 },
-                            { from: 'app.secure_request', to: 'urllib3.util.ssl_.ssl_wrap_socket', file: 'app.py', line: 16 }
-                        ],
-                        uncertainty_reasons: [],
-                        reason: "A static call path from entry point 'app.main' to vulnerable symbol 'urllib3.util.ssl_.ssl_wrap_socket' was confirmed."
-                    },
-                    {
-                        package: 'requests',
-                        installed_version: '2.28.1',
-                        advisory_id: 'GHSA-j8r2-6x86-q33q',
-                        confidence: 'medium',
-                        summary: 'Unintended leak of Proxy-Authorization header across redirects',
-                        verdict: 'NOT_REACHABLE',
-                        vulnerable_symbol: 'requests.sessions.Session.rebuild_auth',
-                        evidence: [],
-                        uncertainty_reasons: [],
-                        reason: 'No static call path found from application entry points to requests.sessions.Session.rebuild_auth within analyzed project scope (no dynamic execution hazards detected).'
-                    }
-                ]
-            },
-            'tests/fixtures/safe_app': {
-                project: 'tests/fixtures/safe_app',
-                scanned_at: new Date().toISOString(),
-                summary: { total_dependencies: 1, total_advisories: 1, reachable_count: 0, not_reachable_count: 1, uncertain_count: 0 },
-                findings: [
-                    {
-                        package: 'cryptography',
-                        installed_version: '3.4.7',
-                        advisory_id: 'CVE-2023-49083',
-                        confidence: 'high',
-                        summary: 'NULL pointer dereference in PKCS7 verification',
-                        verdict: 'NOT_REACHABLE',
-                        vulnerable_symbol: 'cryptography.hazmat.bindings.openssl.PKCS7_verify',
-                        evidence: [],
-                        uncertainty_reasons: [],
-                        reason: 'No static call path found from application entry points to cryptography.hazmat.bindings.openssl.PKCS7_verify within analyzed project scope (no dynamic execution hazards detected).'
-                    }
-                ]
-            },
-            'tests/fixtures/not_reachable_app': {
-                project: 'tests/fixtures/not_reachable_app',
-                scanned_at: new Date().toISOString(),
-                summary: { total_dependencies: 1, total_advisories: 1, reachable_count: 0, not_reachable_count: 1, uncertain_count: 0 },
-                findings: [
-                    {
-                        package: 'cryptography',
-                        installed_version: '3.4.7',
-                        advisory_id: 'CVE-2023-49083',
-                        confidence: 'high',
-                        summary: 'NULL pointer dereference in PKCS7 verification',
-                        verdict: 'NOT_REACHABLE',
-                        vulnerable_symbol: 'cryptography.hazmat.bindings.openssl.PKCS7_verify',
-                        evidence: [],
-                        uncertainty_reasons: [],
-                        reason: 'No static call path found from application entry points to cryptography.hazmat.bindings.openssl.PKCS7_verify within analyzed project scope (no dynamic execution hazards detected).'
-                    }
-                ]
-            },
-            'tests/fixtures/dynamic_hazard_app': {
-                project: 'tests/fixtures/dynamic_hazard_app',
-                scanned_at: new Date().toISOString(),
-                summary: { total_dependencies: 2, total_advisories: 2, reachable_count: 0, not_reachable_count: 1, uncertain_count: 1 },
-                findings: [
-                    {
-                        package: 'pyyaml',
-                        installed_version: null,
-                        advisory_id: 'GHSA-8q59-q68h-6hv4',
-                        confidence: 'low',
-                        summary: 'Arbitrary code execution via custom YAML tag deserialization in yaml.load',
-                        verdict: 'UNCERTAIN',
-                        vulnerable_symbol: 'yaml.load',
-                        evidence: [],
-                        uncertainty_reasons: [
-                            'Encountered dynamic reflection: getattr(module, handler_name) at core/parser.py:59.',
-                            'Installed version is unknown/unpinned; cannot confirm exact vulnerable boundary.'
-                        ],
-                        reason: 'No static path found, but cannot guarantee non-reachability due to dynamic constructs, parse errors, or unpinned version constraints.'
-                    },
-                    {
-                        package: 'jinja2',
-                        installed_version: '3.1.2',
-                        advisory_id: 'GHSA-h5c8-rqwp-cp95',
-                        confidence: 'medium',
-                        summary: 'Cross-site scripting via xmlattr filter with keys containing spaces or control characters',
-                        verdict: 'NOT_REACHABLE',
-                        vulnerable_symbol: 'jinja2.filters.do_xmlattr',
-                        evidence: [],
-                        uncertainty_reasons: [],
-                        reason: 'No static call path found from application entry points to jinja2.filters.do_xmlattr within analyzed project scope.'
-                    }
-                ]
-            },
-            'tests/fixtures/uncertain_app': {
-                project: 'tests/fixtures/uncertain_app',
-                scanned_at: new Date().toISOString(),
-                summary: { total_dependencies: 2, total_advisories: 2, reachable_count: 0, not_reachable_count: 1, uncertain_count: 1 },
-                findings: [
-                    {
-                        package: 'pyyaml',
-                        installed_version: null,
-                        advisory_id: 'GHSA-8q59-q68h-6hv4',
-                        confidence: 'low',
-                        summary: 'Arbitrary code execution via custom YAML tag deserialization in yaml.load',
-                        verdict: 'UNCERTAIN',
-                        vulnerable_symbol: 'yaml.load',
-                        evidence: [],
-                        uncertainty_reasons: [
-                            'Encountered dynamic reflection: getattr(module, handler_name) at core/parser.py:59.',
-                            'Installed version is unknown/unpinned; cannot confirm exact vulnerable boundary.'
-                        ],
-                        reason: 'No static path found, but cannot guarantee non-reachability due to dynamic constructs, parse errors, or unpinned version constraints.'
-                    },
-                    {
-                        package: 'jinja2',
-                        installed_version: '3.1.2',
-                        advisory_id: 'GHSA-h5c8-rqwp-cp95',
-                        confidence: 'medium',
-                        summary: 'Cross-site scripting via xmlattr filter with keys containing spaces or control characters',
-                        verdict: 'NOT_REACHABLE',
-                        vulnerable_symbol: 'jinja2.filters.do_xmlattr',
-                        evidence: [],
-                        uncertainty_reasons: [],
-                        reason: 'No static call path found from application entry points to jinja2.filters.do_xmlattr within analyzed project scope.'
-                    }
-                ]
-            }
-        };
-
         // Render Findings & Trace Viewer
         function renderFindings(report) {
             currentReport = report;
@@ -1361,10 +1215,9 @@ ${tableRows}
             }
         }
 
-        // Toggle Demo Mode
+        // Toggle Demo Mode (loads live sample fixture)
         function toggleDemoMode() {
-            isDemoMode = !isDemoMode;
-            alert(isDemoMode ? 'Demo Mode: Force offline verified fixture visualizer.' : 'Live Mode: Connected directly to FastAPI scanner.');
+            triggerScan('tests/fixtures/reachable_app');
         }
 
         // Toggle Theme
@@ -1372,69 +1225,57 @@ ${tableRows}
             console.log('Obsidian aesthetic locked for maximum contrast.');
         }
 
+        function setLoadingState(isLoading) {
+            const btn = document.getElementById('btn-scan-text');
+            const dropzone = document.getElementById('dropzone');
+            const laser = document.getElementById('scan-laser-line');
+            if (isLoading) {
+                if (dropzone) dropzone.classList.add('is-scanning');
+                if (laser) laser.classList.add('active');
+                if (btn) btn.innerHTML = '<span>Analyzing AST...</span>';
+                const telemetryVerd = document.getElementById('telemetry-verdict');
+                if (telemetryVerd) telemetryVerd.textContent = 'ANALYZING...';
+            } else {
+                if (dropzone) dropzone.classList.remove('is-scanning');
+                if (laser) laser.classList.remove('active');
+                if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg><span>▸ Run Scan</span>';
+            }
+        }
+
         // Trigger Scan (With Laser Sweep & Telemetry Updates)
         async function triggerScan(customPath) {
             const input = document.getElementById('workspace-path-input');
             const path = customPath || (input ? input.value : 'tests/fixtures/reachable_app');
-            const btn = document.getElementById('btn-scan-text');
-            const dropzone = document.getElementById('dropzone');
-            const laser = document.getElementById('scan-laser-line');
+            setLoadingState(true);
 
-            // Trigger Laser Sweep Animation & Border Conic Beam
-            if (dropzone) dropzone.classList.add('is-scanning');
-            if (laser) laser.classList.add('active');
+            const apiBase = getApiBase();
+            const scanUrl = apiBase ? `${apiBase}/api/scan` : '/api/scan';
 
-            if (btn) btn.innerHTML = '<span>Analyzing AST...</span>';
-
-            const telemetryVerd = document.getElementById('telemetry-verdict');
-            if (telemetryVerd) telemetryVerd.textContent = 'PARSING...';
-
-            let report = null;
-
-            if (!isDemoMode) {
-                const apiBase = getApiBase();
-                const endpoints = ['/api/scan'];
-                if (apiBase) endpoints.unshift(`${apiBase}/api/scan`);
-
-                for (const ep of endpoints) {
+            try {
+                const res = await fetch(scanUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ project_path: path, use_network: false }),
+                    signal: AbortSignal.timeout(10000)
+                });
+                if (!res.ok) {
+                    let errMsg = "Scan failed";
                     try {
-                        const res = await fetch(ep, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ project_path: path, path: path }),
-                            signal: AbortSignal.timeout(5000)
-                        });
-                        if (res.ok) {
-                            report = await res.json();
-                            break;
-                        }
+                        const err = await res.json();
+                        errMsg = err.detail || errMsg;
                     } catch (e) {}
+                    throw new Error(errMsg);
                 }
+                const report = await res.json();
+                renderFindings(report);
+                switchTab('results');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) {
+                console.error("Scan error:", err);
+                alert("Scan Error: " + err.message);
+            } finally {
+                setLoadingState(false);
             }
-
-            if (!report) {
-                if (DEMO_FIXTURES[path]) {
-                    report = DEMO_FIXTURES[path];
-                } else if (path.includes('safe') || path.includes('not_reachable')) {
-                    report = DEMO_FIXTURES['tests/fixtures/safe_app'];
-                } else if (path.includes('hazard') || path.includes('uncertain')) {
-                    report = DEMO_FIXTURES['tests/fixtures/dynamic_hazard_app'];
-                } else {
-                    report = DEMO_FIXTURES['tests/fixtures/reachable_app'];
-                }
-            }
-
-            // Stop laser and conic border beam after scan finishes
-            setTimeout(() => {
-                if (dropzone) dropzone.classList.remove('is-scanning');
-                if (laser) laser.classList.remove('active');
-            }, 1600);
-
-            renderFindings(report);
-            switchTab('results');
-
-            if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg><span>▸ Run Scan</span>';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // History Loader
@@ -1478,10 +1319,65 @@ ${tableRows}
             });
         }
 
+        // Real ZIP Archive & Folder Upload Pipeline
+        async function uploadAndScanZip(fileInputOrFiles) {
+            let files = null;
+            if (fileInputOrFiles instanceof FileList || Array.isArray(fileInputOrFiles)) {
+                files = fileInputOrFiles;
+            } else if (fileInputOrFiles && fileInputOrFiles.files) {
+                files = fileInputOrFiles.files;
+            } else if (fileInputOrFiles instanceof File) {
+                files = [fileInputOrFiles];
+            }
+            if (!files || !files.length) return;
+
+            setLoadingState(true);
+            const btn = document.getElementById('btn-scan-text');
+            if (btn) btn.innerHTML = '<span>Uploading &amp; Scanning...</span>';
+
+            const formData = new FormData();
+            if (files.length === 1 && files[0].name.endsWith('.zip')) {
+                formData.append('file', files[0]);
+            } else {
+                for (const f of files) {
+                    formData.append('files', f, f.webkitRelativePath || f.name);
+                }
+            }
+
+            const apiBase = getApiBase();
+            const uploadUrl = apiBase ? `${apiBase}/api/upload` : '/api/upload';
+
+            try {
+                const response = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    let errMsg = "Upload scan failed";
+                    try {
+                        const err = await response.json();
+                        errMsg = err.detail || errMsg;
+                    } catch (jsonErr) {}
+                    throw new Error(errMsg);
+                }
+
+                const data = await response.json();
+                renderFindings(data);
+                switchTab('results');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) {
+                console.error("Scan error:", error);
+                alert("Scan Error: " + error.message);
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
         // File and Folder Upload Hooks
         document.addEventListener('DOMContentLoaded', () => {
             checkBackendHealth();
-            renderFindings(DEMO_FIXTURES['tests/fixtures/reachable_app']);
+            triggerScan('tests/fixtures/reachable_app');
 
             const zipInput = document.querySelector('input[accept=".zip"]');
             const folderInput = document.querySelector('input[webkitdirectory]');
@@ -1491,40 +1387,8 @@ ${tableRows}
             if (chooseZipBtn && zipInput) chooseZipBtn.onclick = (e) => { e.preventDefault(); zipInput.click(); };
             if (chooseFolderBtn && folderInput) chooseFolderBtn.onclick = (e) => { e.preventDefault(); folderInput.click(); };
 
-            const handleUpload = async (files) => {
-                if (!files || !files.length) return;
-                const btn = document.getElementById('btn-scan-text');
-                const dropzone = document.getElementById('dropzone');
-                const laser = document.getElementById('scan-laser-line');
-
-                if (dropzone) dropzone.classList.add('is-scanning');
-                if (laser) laser.classList.add('active');
-                if (btn) btn.innerHTML = '<span>Uploading &amp; Scanning...</span>';
-
-                const formData = new FormData();
-                if (files.length === 1 && files[0].name.endsWith('.zip')) {
-                    formData.append('file', files[0]);
-                } else {
-                    for (const f of files) formData.append('files', f, f.webkitRelativePath || f.name);
-                }
-
-                const apiBase = getApiBase();
-                let report = null;
-                try {
-                    const res = await fetch(`${apiBase}/api/scan`, { method: 'POST', body: formData });
-                    if (res.ok) report = await res.json();
-                } catch (e) {}
-
-                if (!report) report = DEMO_FIXTURES['tests/fixtures/reachable_app'];
-                if (dropzone) dropzone.classList.remove('is-scanning');
-                if (laser) laser.classList.remove('active');
-                renderFindings(report);
-                switchTab('results');
-                if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg><span>▸ Run Scan</span>';
-            };
-
-            if (zipInput) zipInput.onchange = () => handleUpload(zipInput.files);
-            if (folderInput) folderInput.onchange = () => handleUpload(folderInput.files);
+            if (zipInput) zipInput.onchange = () => uploadAndScanZip(zipInput);
+            if (folderInput) folderInput.onchange = () => uploadAndScanZip(folderInput);
 
             // Drag and drop zone with .drag-over state
             const dropzone = document.getElementById('dropzone');
@@ -1540,7 +1404,7 @@ ${tableRows}
                     e.preventDefault();
                     dropzone.classList.remove('drag-over');
                     if (e.dataTransfer.files && e.dataTransfer.files.length) {
-                        handleUpload(e.dataTransfer.files);
+                        uploadAndScanZip(e.dataTransfer.files);
                     }
                 });
             }

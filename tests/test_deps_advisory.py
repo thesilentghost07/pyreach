@@ -668,3 +668,108 @@ class TestFastAPIEndpoints:
         resp_html = client.get("/html/main.html")
         assert resp_html.status_code == 200
         assert "PyReach" in resp_html.text
+
+    def test_upload_endpoint_zip_reachable(self, client):
+        """Upload a valid zip of reachable app and verify real scan pipeline results."""
+        import io
+        import zipfile
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("requirements.txt", "pyyaml==5.3.1\n")
+            zf.writestr(
+                "app.py",
+                "import yaml\n\ndef run():\n    yaml.load('payload')\n\nif __name__ == '__main__':\n    run()\n",
+            )
+        buf.seek(0)
+
+        resp = client.post(
+            "/api/upload",
+            files={"file": ("reachable_test.zip", buf, "application/zip")},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "success"
+        assert data["summary"]["reachable"] == 1
+        assert len(data["findings"]) == 1
+        finding = data["findings"][0]
+        assert finding["package"] == "pyyaml"
+        assert finding["verdict"] == "REACHABLE"
+        assert finding["advisory_id"] == "PYSEC-2020-96"
+        assert finding["vulnerable_symbol"] == "yaml.load"
+        assert 'pip install --upgrade "pyyaml>=5.4"' in finding["remediation_cmd"]
+        assert len(finding["evidence"]) >= 1
+
+    def test_upload_endpoint_zip_not_reachable(self, client):
+        """Upload a zip using safe alternatives and verify NOT_REACHABLE."""
+        import io
+        import zipfile
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("requirements.txt", "pyyaml==5.3.1\n")
+            zf.writestr(
+                "app.py",
+                "import yaml\n\ndef run():\n    yaml.safe_load('payload')\n\nif __name__ == '__main__':\n    run()\n",
+            )
+        buf.seek(0)
+
+        resp = client.post(
+            "/api/upload",
+            files={"file": ("safe_test.zip", buf, "application/zip")},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["summary"]["not_reachable"] == 1
+        assert data["findings"][0]["verdict"] == "NOT_REACHABLE"
+
+    def test_upload_endpoint_zip_uncertain(self, client):
+        """Upload a zip with dynamic reflection and verify UNCERTAIN."""
+        import io
+        import zipfile
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("requirements.txt", "pyyaml==5.3.1\n")
+            zf.writestr(
+                "app.py",
+                "import yaml\n\ndef run():\n    fn = getattr(yaml, 'load')\n    fn('payload')\n\nif __name__ == '__main__':\n    run()\n",
+            )
+        buf.seek(0)
+
+        resp = client.post(
+            "/api/upload",
+            files={"file": ("uncertain_test.zip", buf, "application/zip")},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["summary"]["uncertain"] == 1
+        assert data["findings"][0]["verdict"] == "UNCERTAIN"
+
+    def test_upload_endpoint_invalid_extension_400(self, client):
+        """Non-zip files should return 400."""
+        import io
+
+        resp = client.post(
+            "/api/upload",
+            files={"file": ("test.txt", io.BytesIO(b"dummy text"), "text/plain")},
+        )
+        assert resp.status_code == 400
+        assert "Only .zip files are supported" in resp.json()["detail"]
+
+    def test_upload_endpoint_missing_requirements_400(self, client):
+        """Zip without requirements.txt should return 400."""
+        import io
+        import zipfile
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("app.py", "print('hello world')\n")
+        buf.seek(0)
+
+        resp = client.post(
+            "/api/upload",
+            files={"file": ("no_reqs.zip", buf, "application/zip")},
+        )
+        assert resp.status_code == 400
+        assert "No requirements.txt found" in resp.json()["detail"]
