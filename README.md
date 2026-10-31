@@ -46,6 +46,34 @@ PyReach was designed as a modular 4-member pipeline with locked Pydantic v2 data
 
 ---
 
+## 🧠 Why PyReach Cannot Hallucinate (100% Deterministic Static Analysis)
+
+In security vulnerability triage, hallucinated findings or fabricated call chains are dangerous. PyReach is intentionally engineered with **zero generative AI in its security decision loop**. Every verdict is backed by mathematical graph theory and concrete syntax inspection.
+
+### The 4 Pillars of Deterministic Reachability
+
+1. **Standard Library Python AST Parsing (Zero Speculation / Execution):**  
+   Code is ingested strictly as structural syntax trees via Python's standard `ast.parse()`. There is no probabilistic next-token generation, no LLM prompting, and no guessing of function signatures.
+2. **Breadth-First Search (BFS) Graph Pathfinding:**  
+   Call-graph traversal is mathematically deterministic. If an explicit call edge exists between caller and callee nodes in the AST graph, it is traversed; if no call edge exists, no path can ever be fabricated.
+3. **Verifiable, Line-by-Line Evidence Chains:**  
+   Every single `REACHABLE` verdict is backed by an ordered list of `EvidenceStep` items (`caller -> callee` at `file:line`). Security teams can inspect and verify the exact lines of code independently—nothing is obscured by an opaque model.
+4. **Conservative `UNCERTAIN` Fail-Safe (Zero False-Negative Hallucinations):**  
+   Whenever dynamic reflection (`getattr`, `eval`, `exec`), unresolved imports, or unpinned versions occur, PyReach refuses to speculate that code is safe. It conservatively marks the finding as `UNCERTAIN` citing the exact hazard location.
+
+### LLM-Based Scanners vs. PyReach Static AST + BFS
+
+| Evaluation Dimension | LLM-Based Scanners / "AI Security" | PyReach Static AST + BFS Engine |
+| :--- | :--- | :--- |
+| **Call Path Discovery** | Probabilistic next-token prediction; prone to hallucinating non-existent function paths | Deterministic graph traversal over real `ast.Call` nodes |
+| **Reproducibility** | Non-deterministic (temperature, model drift, prompt sensitivity) | 100% reproducible; identical input produces identical JSON |
+| **Evidence Quality** | Generated prose explanations; often cites plausible-sounding fake lines | Ordered `EvidenceStep` array citing exact file paths and line numbers |
+| **Handling Dynamic Code** | Guesses or invents execution flow | Conservatively flags `UNCERTAIN` citing exact reflection sites |
+| **Code Execution Risk** | Often runs code in sandboxes or prompts LLM with sensitive source | Zero code execution; parses files strictly as plain UTF-8 text |
+| **Auditing & Compliance** | Black-box probabilistic inference (fails strict security audits) | White-box mathematical graph reachability verifiable by human engineers |
+
+---
+
 ## 🚀 Quick Start & Installation
 
 ### 1. Prerequisites & Environment Setup
