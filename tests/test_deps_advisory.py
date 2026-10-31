@@ -659,3 +659,12 @@ class TestFastAPIEndpoints:
                 req_file.unlink()
             if scan_dir.exists():
                 scan_dir.rmdir()
+
+    def test_dashboard_endpoints(self, client):
+        resp_root = client.get("/")
+        assert resp_root.status_code == 200
+        assert "PyReach" in resp_root.text
+
+        resp_html = client.get("/html/main.html")
+        assert resp_html.status_code == 200
+        assert "PyReach" in resp_html.text

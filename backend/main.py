@@ -24,7 +24,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from backend.ast_scanner import scan_project_ast
@@ -66,6 +66,21 @@ class ScanRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+
+@app.get("/", response_class=HTMLResponse)
+def get_dashboard():
+    """Serve the PyReach static reachability web dashboard."""
+    dashboard_file = REPO_ROOT / "html" / "main.html"
+    if dashboard_file.is_file():
+        return FileResponse(dashboard_file)
+    return HTMLResponse("<h1>PyReach Dashboard</h1><p>html/main.html not found</p>")
+
+
+@app.get("/html/main.html", response_class=HTMLResponse)
+def get_dashboard_html():
+    """Direct route for dashboard HTML."""
+    return FileResponse(REPO_ROOT / "html" / "main.html")
 
 
 @app.get("/api/health")
