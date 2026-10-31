@@ -7,3 +7,7 @@ dist/
 .DS_Store
 *.pyc
 scan_history.json
+Hackathon_Conversation_Archive*.md
+*Conversation_Archive*.md
+temp_notes.md
+*.tmp
